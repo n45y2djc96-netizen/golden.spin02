@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090504">
+  <title>Golden Spin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="logo">◆ GOLDEN SPIN</div>
+
+  <div class="balance">
+    🪙 <span id="balance">12500</span>
+  </div>
+
+  <button class="vip">VIP</button>
+</header>
+
+<section class="hero">
+  <button class="main-spin" onclick="showGame('slots')">
+    ИГРАТЬ / SPIN
+  </button>
+</section>
+
+<nav class="games">
+
+  <button onclick="showGame('slots')">
+    🎰
+    <span>Слоты</span>
+  </button>
+
+  <button onclick="showGame('roulette')">
+    🎲
+    <span>Рулетка</span>
+  </button>
+
+  <button onclick="showGame('wheel')">
+    🎡
+    <span>Мини-игры</span>
+  </button>
+
+  <button onclick="showGame('chests')">
+    🧰
+    <span>Сундуки</span>
+  </button>
+
+  <button onclick="showGame('smash')">
+    🔨
+    <span>Разбить</span>
+  </button>
+
+</nav>
+
+<main id="game"></main>
+
+<section class="bottom">
+
+  <div class="panel">
+    <h2>✦ ТУРНИР ЛИДЕРЫ ✦</h2>
+
+    <div class="leader">
+      <b>1.</b>
+      <span>Player1</span>
+      <strong>15 300</strong>
+    </div>
+
+    <div class="leader">
+      <b>2.</b>
+      <span>Player2</span>
+      <strong>12 500</strong>
+    </div>
+
+    <div class="leader">
+      <b>3.</b>
+      <span>Player3</span>
+      <strong>10 200</strong>
+    </div>
+  </div>
+
+  <div class="panel daily">
+    <h2>ЕЖЕДНЕВНЫЙ БОНУС</h2>
+
+    <div class="gift">🎁</div>
+
+    <button class="gold-button" onclick="dailyBonus()">
+      ЗАБРАТЬ 250
+    </button>
+  </div>
+
+</section>
+
+<div id="message"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
