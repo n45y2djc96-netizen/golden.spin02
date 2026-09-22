@@ -1,99 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090504">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <meta name="theme-color" content="#170804">
+
   <title>Golden Spin</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header class="topbar">
-  <div class="logo">◆ GOLDEN SPIN</div>
 
-  <div class="balance">
-    🪙 <span id="balance">12500</span>
+  <div class="brand">
+    ◆ GOLDEN SPIN
   </div>
 
-  <button class="vip">VIP</button>
+  <div class="wallet">
+    🪙
+    <b id="balance">12 550</b>
+
+    <button class="vip-btn" id="vipBtn">
+      VIP
+    </button>
+  </div>
+
 </header>
 
+
 <section class="hero">
-  <button class="main-spin" onclick="showGame('slots')">
+
+  <button class="hero-spin" id="heroSpin">
     ИГРАТЬ / SPIN
   </button>
+
 </section>
 
-<nav class="games">
 
-  <button onclick="showGame('slots')">
+<nav class="game-nav">
+
+  <button class="game-tab active" data-game="slots">
     🎰
-    <span>Слоты</span>
+    <small>Слоты</small>
   </button>
 
-  <button onclick="showGame('roulette')">
+  <button class="game-tab" data-game="roulette">
     🎲
-    <span>Рулетка</span>
+    <small>Рулетка</small>
   </button>
 
-  <button onclick="showGame('wheel')">
+  <button class="game-tab" data-game="wheel">
     🎡
-    <span>Мини-игры</span>
+    <small>Мини-игры</small>
   </button>
 
-  <button onclick="showGame('chests')">
+  <button class="game-tab" data-game="chests">
     🧰
-    <span>Сундуки</span>
+    <small>Сундуки</small>
   </button>
 
-  <button onclick="showGame('smash')">
+  <button class="game-tab" data-game="smash">
     🔨
-    <span>Разбить</span>
+    <small>Разбить</small>
   </button>
 
 </nav>
 
+
 <main id="game"></main>
 
-<section class="bottom">
+
+<section class="info-grid">
 
   <div class="panel">
-    <h2>✦ ТУРНИР ЛИДЕРЫ ✦</h2>
 
-    <div class="leader">
-      <b>1.</b>
-      <span>Player1</span>
-      <strong>15 300</strong>
+    <h3>🏆 ЛИДЕРБОРД</h3>
+
+    <div>
+      🥇 Player_777
+      <b>128 450</b>
     </div>
 
-    <div class="leader">
-      <b>2.</b>
-      <span>Player2</span>
-      <strong>12 500</strong>
+    <div>
+      🥈 LuckyFox
+      <b>96 200</b>
     </div>
 
-    <div class="leader">
-      <b>3.</b>
-      <span>Player3</span>
-      <strong>10 200</strong>
+    <div>
+      🥉 GoldenBoy
+      <b>74 800</b>
     </div>
+
   </div>
 
+
   <div class="panel daily">
-    <h2>ЕЖЕДНЕВНЫЙ БОНУС</h2>
 
-    <div class="gift">🎁</div>
+    <h3>🎁 ЕЖЕДНЕВНЫЙ БОНУС</h3>
 
-    <button class="gold-button" onclick="dailyBonus()">
-      ЗАБРАТЬ 250
+    <p>
+      Бесплатные <b>250</b> токенов
+    </p>
+
+    <button class="gold-btn" id="dailyBtn">
+      ЗАБРАТЬ
     </button>
+
   </div>
 
 </section>
 
-<div id="message"></div>
+
+<button class="sound-toggle" id="soundToggle">
+  🔊
+</button>
+
+
+<div class="toast" id="toast"></div>
+
+
+<div class="modal" id="modal">
+
+  <div class="modal-card">
+
+    <button class="modal-close" id="modalClose">
+      ×
+    </button>
+
+    <h2 id="modalTitle">
+      VIP
+    </h2>
+
+    <p id="modalText"></p>
+
+    <button class="gold-btn" id="modalOk">
+      ПОНЯТНО
+    </button>
+
+  </div>
+
+</div>
+
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <script src="app.js"></script>
 
