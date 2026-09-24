@@ -2,38 +2,30 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#080503">
-  <meta name="description" content="Golden Spin — казино с виртуальными игровыми токенами">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#080300">
   <title>Golden Spin</title>
-
-  <!-- ВАЖНО: файл называется именно style.css -->
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- BACKGROUND -->
-  <div class="bg-glow glow-1"></div>
-  <div class="bg-glow glow-2"></div>
-  <div class="particles" id="particles"></div>
-
   <!-- HEADER -->
-  <header class="topbar">
+  <header class="header">
     <div class="brand">
       <div class="brand-diamond">◆</div>
       <div>
-        <div class="brand-name">GOLDEN <span>SPIN</span></div>
-        <div class="brand-sub">VIRTUAL CASINO</div>
+        <div class="brand-name">GOLDEN SPIN</div>
+        <div class="brand-sub">GOLDEN CASINO</div>
       </div>
     </div>
 
-    <div class="account">
+    <div class="header-right">
       <div class="balance">
         <span class="coin">●</span>
-        <strong id="balance">12500</strong>
+        <span id="balance">12 550</span>
       </div>
       <button class="vip-btn">VIP</button>
     </div>
@@ -42,293 +34,351 @@
   <!-- HERO -->
   <section class="hero">
 
-    <div class="hero-badge">✦ GOLDEN EXPERIENCE ✦</div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
 
-    <h1>ИГРАТЬ <span>/</span> SPIN</h1>
+    <div class="hero-small">WELCOME, GOLDEN PLAYER</div>
 
-    <p class="hero-text">
+    <h1>
+      PLAY TO
+      <span>WIN</span>
+    </h1>
+
+    <p>
       Испытай удачу в мире<br>
-      <strong>Golden Spin</strong>
+      <b>Golden Spin</b>
     </p>
 
-    <button class="main-spin" id="mainSpin">
-      <span>ИГРАТЬ / SPIN</span>
+    <button class="main-spin" onclick="spin()">
+      <span>◆</span>
+      ИГРАТЬ / SPIN
     </button>
 
-    <div class="hero-stats">
-      <div>
-        <span class="stat-icon">⚡</span>
-        <strong>24/7</strong>
-        <small>ИГРА</small>
-      </div>
-
-      <div>
-        <span class="stat-icon">♛</span>
-        <strong>VIP</strong>
-        <small>LEVEL</small>
-      </div>
-
-      <div>
-        <span class="stat-icon">★</span>
-        <strong>FREE</strong>
-        <small>BONUS</small>
-      </div>
-    </div>
   </section>
 
-  <!-- NAV -->
-  <nav class="game-nav">
+  <!-- FEATURES -->
+  <section class="features">
 
-    <button class="nav-card active" data-game="slots">
-      <span>🎰</span>
-      <b>Слоты</b>
-      <small>JACKPOT</small>
-    </button>
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <b>24/7</b>
+      <span>ИГРА</span>
+    </div>
 
-    <button class="nav-card" data-game="roulette">
-      <span>🎲</span>
-      <b>Рулетка</b>
-      <small>ROULETTE</small>
-    </button>
+    <div class="feature">
+      <div class="feature-icon">♛</div>
+      <b>VIP</b>
+      <span>LEVEL</span>
+    </div>
 
-    <button class="nav-card" data-game="wheel">
-      <span>🎡</span>
-      <b>Колесо</b>
-      <small>FORTUNE</small>
-    </button>
+    <div class="feature">
+      <div class="feature-icon">★</div>
+      <b>FREE</b>
+      <span>BONUS</span>
+    </div>
 
-    <button class="nav-card" data-game="chests">
-      <span>🧰</span>
-      <b>Сундуки</b>
-      <small>REWARDS</small>
-    </button>
+  </section>
 
-    <button class="nav-card" data-game="break">
-      <span>🔨</span>
-      <b>Разбить</b>
-      <small>MINI GAME</small>
-    </button>
+  <!-- GAMES -->
+  <section class="games">
 
-  </nav>
+    <div class="section-title">
+      <span>CHOOSE YOUR GAME</span>
+      <h2>Игры</h2>
+    </div>
 
-  <!-- GAME AREA -->
-  <main class="game-area">
+    <div class="game-grid">
 
-    <!-- SLOTS -->
-    <section class="game-panel active" id="slots">
+      <button class="game-card active" onclick="selectGame('slots')">
+        <div class="game-icon">🎰</div>
+        <div class="game-name">Слоты</div>
+        <div class="game-description">Lucky 777</div>
+        <div class="play-arrow">→</div>
+      </button>
 
-      <div class="panel-title">
-        <div class="title-icon">🎰</div>
-        <div>
-          <h2>СЛОТЫ</h2>
-          <p>КРУТИ И ПОЛУЧАЙ ВИРТУАЛЬНЫЕ ТОКЕНЫ</p>
-        </div>
+      <button class="game-card" onclick="selectGame('roulette')">
+        <div class="game-icon">🎯</div>
+        <div class="game-name">Рулетка</div>
+        <div class="game-description">Roulette</div>
+        <div class="play-arrow">→</div>
+      </button>
+
+      <button class="game-card" onclick="selectGame('wheel')">
+        <div class="game-icon">🎡</div>
+        <div class="game-name">Колесо</div>
+        <div class="game-description">Lucky Wheel</div>
+        <div class="play-arrow">→</div>
+      </button>
+
+      <button class="game-card" onclick="selectGame('chest')">
+        <div class="game-icon">🧰</div>
+        <div class="game-name">Сундуки</div>
+        <div class="game-description">Golden Chest</div>
+        <div class="play-arrow">→</div>
+      </button>
+
+      <button class="game-card" onclick="selectGame('block')">
+        <div class="game-icon">🔨</div>
+        <div class="game-name">Разбить</div>
+        <div class="game-description">Break Block</div>
+        <div class="play-arrow">→</div>
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- SLOT MACHINE -->
+  <section class="casino">
+
+    <div class="casino-header">
+      <div class="casino-title">
+        <span>🎰</span>
+        СЛОТЫ
       </div>
 
       <div class="jackpot">
-        <span>✦ JACKPOT ✦</span>
-        <strong id="jackpot">250 000</strong>
+        JACKPOT
+        <strong id="jackpot">125 500</strong>
       </div>
-
-      <div class="slot-machine">
-
-        <div class="slot-glow"></div>
-
-        <div class="reels">
-          <div class="reel" id="reel1">🍋</div>
-          <div class="reel" id="reel2">7️⃣</div>
-          <div class="reel" id="reel3">⭐</div>
-        </div>
-
-        <div class="slot-line"></div>
-
-        <div class="slot-message" id="slotMessage">
-          Нажми SPIN
-        </div>
-
-      </div>
-
-      <div class="controls">
-
-        <div class="bet-box">
-          <span>СТАВКА</span>
-          <select id="bet">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50" selected>50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-            <option value="500">500</option>
-          </select>
-        </div>
-
-        <button class="gold-button" id="spinButton">
-          <span>SPIN</span>
-          <small>− ставка</small>
-        </button>
-
-      </div>
-
-    </section>
-
-    <!-- ROULETTE -->
-    <section class="game-panel" id="roulette">
-
-      <div class="panel-title">
-        <div class="title-icon">🎲</div>
-        <div>
-          <h2>РУЛЕТКА</h2>
-          <p>ВЫБЕРИ ЧИСЛО</p>
-        </div>
-      </div>
-
-      <div class="roulette-wrap">
-        <div class="roulette-pointer">▼</div>
-
-        <div class="roulette-wheel" id="rouletteWheel">
-          <div class="roulette-center">GS</div>
-        </div>
-      </div>
-
-      <div class="roulette-number" id="rouletteNumber">
-        READY
-      </div>
-
-      <button class="gold-button wide" id="rouletteButton">
-        КРУТИТЬ РУЛЕТКУ
-      </button>
-
-    </section>
-
-    <!-- WHEEL -->
-    <section class="game-panel" id="wheel">
-
-      <div class="panel-title">
-        <div class="title-icon">🎡</div>
-        <div>
-          <h2>КОЛЕСО ФОРТУНЫ</h2>
-          <p>ОДИН SPIN — ОДНА НАГРАДА</p>
-        </div>
-      </div>
-
-      <div class="fortune-area">
-        <div class="fortune-pointer">▼</div>
-
-        <div class="fortune-wheel" id="fortuneWheel">
-          <div class="fortune-center">★</div>
-        </div>
-      </div>
-
-      <div class="fortune-result" id="fortuneResult">
-        КРУТИ КОЛЕСО
-      </div>
-
-      <button class="gold-button wide" id="fortuneButton">
-        КРУТИТЬ
-      </button>
-
-    </section>
-
-    <!-- CHESTS -->
-    <section class="game-panel" id="chests">
-
-      <div class="panel-title">
-        <div class="title-icon">🧰</div>
-        <div>
-          <h2>СУНДУКИ</h2>
-          <p>ВЫБЕРИ ОДИН СУНДУК</p>
-        </div>
-      </div>
-
-      <div class="chests">
-
-        <button class="chest" data-reward="100">
-          <span>🧰</span>
-          <b>BRONZE</b>
-          <small>100–300</small>
-        </button>
-
-        <button class="chest premium" data-reward="500">
-          <span>🧰</span>
-          <b>GOLD</b>
-          <small>500–1 500</small>
-        </button>
-
-        <button class="chest vip-chest" data-reward="1500">
-          <span>👑</span>
-          <b>ROYAL</b>
-          <small>1 500–5 000</small>
-        </button>
-
-      </div>
-
-      <div class="chest-result" id="chestResult">
-        ВЫБЕРИ СУНДУК
-      </div>
-
-    </section>
-
-    <!-- BREAK -->
-    <section class="game-panel" id="break">
-
-      <div class="panel-title">
-        <div class="title-icon">🔨</div>
-        <div>
-          <h2>РАЗБИТЬ БЛОК</h2>
-          <p>НАЙДИ НАГРАДУ</p>
-        </div>
-      </div>
-
-      <div class="blocks" id="blocks">
-
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-        <button class="block">?</button>
-
-      </div>
-
-      <div class="break-result" id="breakResult">
-        ВЫБЕРИ БЛОК
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- BONUS -->
-  <section class="bonus-card">
-
-    <div class="bonus-decoration">✦</div>
-
-    <div class="bonus-text">
-      <span>ЕЖЕДНЕВНЫЙ БОНУС</span>
-      <strong>+500 TOKENS</strong>
-      <small>Виртуальная награда</small>
     </div>
 
-    <button id="bonusButton">
-      ЗАБРАТЬ
-    </button>
+    <div class="machine">
+
+      <div class="machine-top">
+        <span>GOLDEN 777</span>
+        <span>★ ★ ★</span>
+      </div>
+
+      <div class="reels">
+
+        <div class="reel" id="reel1">
+          <span>🍋</span>
+        </div>
+
+        <div class="reel" id="reel2">
+          <span>7️⃣</span>
+        </div>
+
+        <div class="reel" id="reel3">
+          <span>⭐</span>
+        </div>
+
+      </div>
+
+      <div class="win-line"></div>
+
+      <div class="machine-controls">
+
+        <div class="bet">
+          <span>СТАВКА</span>
+
+          <div class="bet-control">
+            <button onclick="changeBet(-10)">−</button>
+            <strong id="bet">50</strong>
+            <button onclick="changeBet(10)">+</button>
+          </div>
+        </div>
+
+        <button class="spin-button" onclick="spin()">
+          <span>SPIN</span>
+          <small>КРУТИТЬ</small>
+        </button>
+
+      </div>
+
+      <div class="result" id="result">
+        ГОТОВ К ИГРЕ
+      </div>
+
+    </div>
 
   </section>
 
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">◆ GOLDEN SPIN</div>
-    <p>Игра использует только виртуальные игровые токены.</p>
-    <p>Токены не являются денежными средствами и не выводятся в деньги.</p>
+    <div class="footer-text">
+      Только виртуальные токены
+    </div>
   </footer>
 
 </div>
 
-<!-- JS -->
-<script src="./app.js"></script>
+<!-- WIN POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <div class="popup-star">★</div>
+    <h2>ПОБЕДА!</h2>
+    <div class="popup-win" id="popupWin">+500</div>
+    <button onclick="closePopup()">ЗАБРАТЬ</button>
+  </div>
+</div>
+
+<script>
+
+let balance = 12550;
+let bet = 50;
+let spinning = false;
+
+const symbols = [
+  "🍋",
+  "🍊",
+  "🍒",
+  "💎",
+  "⭐",
+  "7️⃣"
+];
+
+function formatNumber(number) {
+  return number.toLocaleString("ru-RU").replace(/\u00A0/g, " ");
+}
+
+function updateBalance() {
+  document.getElementById("balance").textContent =
+    formatNumber(balance);
+}
+
+function changeBet(value) {
+
+  bet += value;
+
+  if (bet < 10) bet = 10;
+  if (bet > 500) bet = 500;
+
+  document.getElementById("bet").textContent = bet;
+}
+
+function randomSymbol() {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+function spin() {
+
+  if (spinning) return;
+
+  if (balance < bet) {
+    document.getElementById("result").textContent =
+      "НЕДОСТАТОЧНО ТОКЕНОВ";
+    return;
+  }
+
+  spinning = true;
+
+  balance -= bet;
+  updateBalance();
+
+  const reels = [
+    document.querySelector("#reel1 span"),
+    document.querySelector("#reel2 span"),
+    document.querySelector("#reel3 span")
+  ];
+
+  document.getElementById("result").textContent =
+    "КРУТИМ...";
+
+  reels.forEach((reel, index) => {
+
+    reel.parentElement.classList.add("spinning");
+
+    let counter = 0;
+
+    const timer = setInterval(() => {
+
+      reel.textContent = randomSymbol();
+
+      counter++;
+
+      if (counter >= 12 + index * 5) {
+
+        clearInterval(timer);
+
+        reel.parentElement.classList.remove("spinning");
+
+        if (index === 2) {
+          finishSpin(reels);
+        }
+      }
+
+    }, 70);
+
+  });
+}
+
+function finishSpin(reels) {
+
+  const result = reels.map(r => r.textContent);
+
+  let win = 0;
+
+  if (
+    result[0] === result[1] &&
+    result[1] === result[2]
+  ) {
+
+    win = bet * 10;
+
+  } else if (
+    result[0] === result[1] ||
+    result[1] === result[2] ||
+    result[0] === result[2]
+  ) {
+
+    win = bet * 2;
+
+  }
+
+  if (win > 0) {
+
+    balance += win;
+    updateBalance();
+
+    document.getElementById("result").textContent =
+      "WIN +" + formatNumber(win);
+
+    document.getElementById("popupWin").textContent =
+      "+" + formatNumber(win);
+
+    setTimeout(() => {
+      document.getElementById("popup").classList.add("show");
+    }, 300);
+
+  } else {
+
+    document.getElementById("result").textContent =
+      "ПОПРОБУЙ ЕЩЁ";
+
+  }
+
+  spinning = false;
+}
+
+function closePopup() {
+  document.getElementById("popup").classList.remove("show");
+}
+
+function selectGame(game) {
+
+  document.querySelectorAll(".game-card")
+    .forEach(card => card.classList.remove("active"));
+
+  event.currentTarget.classList.add("active");
+
+  if (game !== "slots") {
+
+    document.getElementById("result").textContent =
+      "РАЗДЕЛ В РАЗРАБОТКЕ";
+
+  } else {
+
+    document.getElementById("result").textContent =
+      "ГОТОВ К ИГРЕ";
+
+  }
+
+}
+
+</script>
 
 </body>
 </html>
