@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#080300">
   <title>Golden Spin</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -12,373 +11,237 @@
 
 <div class="app">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-diamond">◆</div>
-      <div>
-        <div class="brand-name">GOLDEN SPIN</div>
-        <div class="brand-sub">GOLDEN CASINO</div>
-      </div>
+  <header class="topbar">
+    <div class="logo">
+      <span class="diamond">◆</span>
+      GOLDEN SPIN
     </div>
 
-    <div class="header-right">
-      <div class="balance">
-        <span class="coin">●</span>
-        <span id="balance">12 550</span>
-      </div>
-      <button class="vip-btn">VIP</button>
+    <div class="balance">
+      🪙 <span id="balance">12550</span>
     </div>
+
+    <button class="vip">VIP</button>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
+  <main>
 
-    <div class="glow glow-1"></div>
-    <div class="glow glow-2"></div>
+    <section class="hero">
+      <div class="hero-glow"></div>
 
-    <div class="hero-small">WELCOME, GOLDEN PLAYER</div>
+      <div class="welcome">WELCOME GOLDEN PLAYER</div>
 
-    <h1>
-      PLAY TO
-      <span>WIN</span>
-    </h1>
-
-    <p>
-      Испытай удачу в мире<br>
-      <b>Golden Spin</b>
-    </p>
-
-    <button class="main-spin" onclick="spin()">
-      <span>◆</span>
-      ИГРАТЬ / SPIN
-    </button>
-
-  </section>
-
-  <!-- FEATURES -->
-  <section class="features">
-
-    <div class="feature">
-      <div class="feature-icon">⚡</div>
-      <b>24/7</b>
-      <span>ИГРА</span>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon">♛</div>
-      <b>VIP</b>
-      <span>LEVEL</span>
-    </div>
-
-    <div class="feature">
-      <div class="feature-icon">★</div>
-      <b>FREE</b>
-      <span>BONUS</span>
-    </div>
-
-  </section>
-
-  <!-- GAMES -->
-  <section class="games">
-
-    <div class="section-title">
-      <span>CHOOSE YOUR GAME</span>
-      <h2>Игры</h2>
-    </div>
-
-    <div class="game-grid">
-
-      <button class="game-card active" onclick="selectGame('slots')">
-        <div class="game-icon">🎰</div>
-        <div class="game-name">Слоты</div>
-        <div class="game-description">Lucky 777</div>
-        <div class="play-arrow">→</div>
+      <button class="main-spin" onclick="playCurrentGame()">
+        ИГРАТЬ / SPIN
       </button>
 
-      <button class="game-card" onclick="selectGame('roulette')">
-        <div class="game-icon">🎯</div>
-        <div class="game-name">Рулетка</div>
-        <div class="game-description">Roulette</div>
-        <div class="play-arrow">→</div>
-      </button>
+      <div class="games">
 
-      <button class="game-card" onclick="selectGame('wheel')">
-        <div class="game-icon">🎡</div>
-        <div class="game-name">Колесо</div>
-        <div class="game-description">Lucky Wheel</div>
-        <div class="play-arrow">→</div>
-      </button>
+        <button class="game-tab active" onclick="selectGame('slots')">
+          <span>🎰</span>
+          <small>Слоты</small>
+        </button>
 
-      <button class="game-card" onclick="selectGame('chest')">
-        <div class="game-icon">🧰</div>
-        <div class="game-name">Сундуки</div>
-        <div class="game-description">Golden Chest</div>
-        <div class="play-arrow">→</div>
-      </button>
+        <button class="game-tab" onclick="selectGame('roulette')">
+          <span>🎲</span>
+          <small>Рулетка</small>
+        </button>
 
-      <button class="game-card" onclick="selectGame('block')">
-        <div class="game-icon">🔨</div>
-        <div class="game-name">Разбить</div>
-        <div class="game-description">Break Block</div>
-        <div class="play-arrow">→</div>
-      </button>
+        <button class="game-tab" onclick="selectGame('wheel')">
+          <span>🎡</span>
+          <small>Колесо</small>
+        </button>
 
-    </div>
+        <button class="game-tab" onclick="selectGame('chests')">
+          <span>🧰</span>
+          <small>Сундуки</small>
+        </button>
 
-  </section>
-
-  <!-- SLOT MACHINE -->
-  <section class="casino">
-
-    <div class="casino-header">
-      <div class="casino-title">
-        <span>🎰</span>
-        СЛОТЫ
-      </div>
-
-      <div class="jackpot">
-        JACKPOT
-        <strong id="jackpot">125 500</strong>
-      </div>
-    </div>
-
-    <div class="machine">
-
-      <div class="machine-top">
-        <span>GOLDEN 777</span>
-        <span>★ ★ ★</span>
-      </div>
-
-      <div class="reels">
-
-        <div class="reel" id="reel1">
-          <span>🍋</span>
-        </div>
-
-        <div class="reel" id="reel2">
-          <span>7️⃣</span>
-        </div>
-
-        <div class="reel" id="reel3">
-          <span>⭐</span>
-        </div>
-
-      </div>
-
-      <div class="win-line"></div>
-
-      <div class="machine-controls">
-
-        <div class="bet">
-          <span>СТАВКА</span>
-
-          <div class="bet-control">
-            <button onclick="changeBet(-10)">−</button>
-            <strong id="bet">50</strong>
-            <button onclick="changeBet(10)">+</button>
-          </div>
-        </div>
-
-        <button class="spin-button" onclick="spin()">
-          <span>SPIN</span>
-          <small>КРУТИТЬ</small>
+        <button class="game-tab" onclick="selectGame('block')">
+          <span>🔨</span>
+          <small>Блок</small>
         </button>
 
       </div>
+    </section>
 
-      <div class="result" id="result">
-        ГОТОВ К ИГРЕ
+    <section class="casino">
+
+      <div class="game-title">
+        <span id="gameIcon">🎰</span>
+        <span id="gameTitle">СЛОТЫ</span>
       </div>
 
-    </div>
+      <!-- SLOTS -->
+      <div id="slotsGame" class="game-panel">
 
-  </section>
+        <div class="machine">
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-logo">◆ GOLDEN SPIN</div>
-    <div class="footer-text">
-      Только виртуальные токены
-    </div>
-  </footer>
+          <div class="reel" id="reel1">🍋</div>
+          <div class="reel" id="reel2">7️⃣</div>
+          <div class="reel" id="reel3">⭐</div>
+
+        </div>
+
+        <div class="controls">
+          <select id="slotBet">
+            <option value="10">Ставка 10</option>
+            <option value="25">Ставка 25</option>
+            <option value="50" selected>Ставка 50</option>
+            <option value="100">Ставка 100</option>
+            <option value="250">Ставка 250</option>
+          </select>
+
+          <button class="gold-button" onclick="spinSlots()">
+            SPIN
+          </button>
+        </div>
+
+        <div id="slotMessage" class="message">
+          Испытай удачу
+        </div>
+
+      </div>
+
+      <!-- ROULETTE -->
+      <div id="rouletteGame" class="game-panel hidden">
+
+        <div class="roulette-wrap">
+
+          <div class="roulette-pointer">▼</div>
+
+          <div id="rouletteWheel" class="roulette-wheel">
+            <div class="roulette-number n0">0</div>
+            <div class="roulette-number n1">1</div>
+            <div class="roulette-number n2">2</div>
+            <div class="roulette-number n3">3</div>
+            <div class="roulette-number n4">4</div>
+            <div class="roulette-number n5">5</div>
+            <div class="roulette-number n6">6</div>
+            <div class="roulette-number n7">7</div>
+            <div class="roulette-number n8">8</div>
+            <div class="roulette-number n9">9</div>
+            <div class="roulette-number n10">10</div>
+            <div class="roulette-number n11">11</div>
+          </div>
+
+        </div>
+
+        <div class="bet-buttons">
+          <button onclick="rouletteBet('red')">🔴 КРАСНОЕ</button>
+          <button onclick="rouletteBet('black')">⚫ ЧЁРНОЕ</button>
+          <button onclick="rouletteBet('green')">🟢 ZERO</button>
+        </div>
+
+        <div class="controls">
+          <select id="rouletteBet">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+
+          <button class="gold-button" onclick="spinRoulette()">
+            SPIN
+          </button>
+        </div>
+
+        <div id="rouletteMessage" class="message">
+          Сделай ставку
+        </div>
+
+      </div>
+
+      <!-- WHEEL -->
+      <div id="wheelGame" class="game-panel hidden">
+
+        <div class="wheel-wrap">
+          <div class="wheel-pointer">▼</div>
+          <div id="fortuneWheel" class="fortune-wheel">
+            <div>10</div>
+            <div>25</div>
+            <div>50</div>
+            <div>100</div>
+            <div>250</div>
+            <div>500</div>
+            <div>1000</div>
+            <div>💥</div>
+          </div>
+        </div>
+
+        <button class="gold-button wide" onclick="spinFortuneWheel()">
+          КРУТИТЬ КОЛЕСО
+        </button>
+
+        <div id="wheelMessage" class="message">
+          Попробуй сорвать джекпот
+        </div>
+
+      </div>
+
+      <!-- CHESTS -->
+      <div id="chestsGame" class="game-panel hidden">
+
+        <div class="chests">
+
+          <button class="chest" onclick="openChest(this)">
+            🧰
+            <span>Сундук</span>
+          </button>
+
+          <button class="chest" onclick="openChest(this)">
+            🧰
+            <span>Сундук</span>
+          </button>
+
+          <button class="chest" onclick="openChest(this)">
+            🧰
+            <span>Сундук</span>
+          </button>
+
+        </div>
+
+        <div id="chestMessage" class="message">
+          Выбери один сундук
+        </div>
+
+      </div>
+
+      <!-- BLOCK -->
+      <div id="blockGame" class="game-panel hidden">
+
+        <div class="block-area">
+
+          <div id="bigBlock" class="big-block">
+            🧱
+          </div>
+
+          <div class="hits">
+            УДАРОВ:
+            <span id="hits">0</span>
+          </div>
+
+        </div>
+
+        <button class="gold-button wide" onclick="hitBlock()">
+          🔨 РАЗБИТЬ
+        </button>
+
+        <div id="blockMessage" class="message">
+          Разбей блок и получи награду
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
 
 </div>
 
-<!-- WIN POPUP -->
-<div class="popup" id="popup">
-  <div class="popup-box">
-    <div class="popup-star">★</div>
-    <h2>ПОБЕДА!</h2>
-    <div class="popup-win" id="popupWin">+500</div>
-    <button onclick="closePopup()">ЗАБРАТЬ</button>
-  </div>
-</div>
-
-<script>
-
-let balance = 12550;
-let bet = 50;
-let spinning = false;
-
-const symbols = [
-  "🍋",
-  "🍊",
-  "🍒",
-  "💎",
-  "⭐",
-  "7️⃣"
-];
-
-function formatNumber(number) {
-  return number.toLocaleString("ru-RU").replace(/\u00A0/g, " ");
-}
-
-function updateBalance() {
-  document.getElementById("balance").textContent =
-    formatNumber(balance);
-}
-
-function changeBet(value) {
-
-  bet += value;
-
-  if (bet < 10) bet = 10;
-  if (bet > 500) bet = 500;
-
-  document.getElementById("bet").textContent = bet;
-}
-
-function randomSymbol() {
-  return symbols[Math.floor(Math.random() * symbols.length)];
-}
-
-function spin() {
-
-  if (spinning) return;
-
-  if (balance < bet) {
-    document.getElementById("result").textContent =
-      "НЕДОСТАТОЧНО ТОКЕНОВ";
-    return;
-  }
-
-  spinning = true;
-
-  balance -= bet;
-  updateBalance();
-
-  const reels = [
-    document.querySelector("#reel1 span"),
-    document.querySelector("#reel2 span"),
-    document.querySelector("#reel3 span")
-  ];
-
-  document.getElementById("result").textContent =
-    "КРУТИМ...";
-
-  reels.forEach((reel, index) => {
-
-    reel.parentElement.classList.add("spinning");
-
-    let counter = 0;
-
-    const timer = setInterval(() => {
-
-      reel.textContent = randomSymbol();
-
-      counter++;
-
-      if (counter >= 12 + index * 5) {
-
-        clearInterval(timer);
-
-        reel.parentElement.classList.remove("spinning");
-
-        if (index === 2) {
-          finishSpin(reels);
-        }
-      }
-
-    }, 70);
-
-  });
-}
-
-function finishSpin(reels) {
-
-  const result = reels.map(r => r.textContent);
-
-  let win = 0;
-
-  if (
-    result[0] === result[1] &&
-    result[1] === result[2]
-  ) {
-
-    win = bet * 10;
-
-  } else if (
-    result[0] === result[1] ||
-    result[1] === result[2] ||
-    result[0] === result[2]
-  ) {
-
-    win = bet * 2;
-
-  }
-
-  if (win > 0) {
-
-    balance += win;
-    updateBalance();
-
-    document.getElementById("result").textContent =
-      "WIN +" + formatNumber(win);
-
-    document.getElementById("popupWin").textContent =
-      "+" + formatNumber(win);
-
-    setTimeout(() => {
-      document.getElementById("popup").classList.add("show");
-    }, 300);
-
-  } else {
-
-    document.getElementById("result").textContent =
-      "ПОПРОБУЙ ЕЩЁ";
-
-  }
-
-  spinning = false;
-}
-
-function closePopup() {
-  document.getElementById("popup").classList.remove("show");
-}
-
-function selectGame(game) {
-
-  document.querySelectorAll(".game-card")
-    .forEach(card => card.classList.remove("active"));
-
-  event.currentTarget.classList.add("active");
-
-  if (game !== "slots") {
-
-    document.getElementById("result").textContent =
-      "РАЗДЕЛ В РАЗРАБОТКЕ";
-
-  } else {
-
-    document.getElementById("result").textContent =
-      "ГОТОВ К ИГРЕ";
-
-  }
-
-}
-
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
