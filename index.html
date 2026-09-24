@@ -2,942 +2,333 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-  >
-
-  <meta name="theme-color" content="#080604">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080503">
+  <meta name="description" content="Golden Spin — казино с виртуальными игровыми токенами">
   <title>Golden Spin</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
-    rel="stylesheet"
-  >
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- ВАЖНО: файл называется именно style.css -->
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- =====================================
-       BACKGROUND
-  ====================================== -->
+  <!-- BACKGROUND -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <div class="particles" id="particles"></div>
 
-  <div class="ambient ambient-1"></div>
-  <div class="ambient ambient-2"></div>
-  <div class="ambient ambient-3"></div>
-
-  <div class="noise"></div>
-
-  <!-- =====================================
-       TOP HEADER
-  ====================================== -->
-
+  <!-- HEADER -->
   <header class="topbar">
-
-    <div class="profile">
-
-      <button class="profile-button" id="profileButton">
-        <span id="profileLetter">G</span>
-      </button>
-
-      <div class="profile-info">
-        <span class="profile-label">WELCOME</span>
-        <strong>Golden Player</strong>
-      </div>
-
-    </div>
-
     <div class="brand">
-      <div class="brand-mark">
-        <span>◆</span>
-      </div>
-
-      <div class="brand-name">
-        <span>GOLDEN</span>
-        <strong>SPIN</strong>
+      <div class="brand-diamond">◆</div>
+      <div>
+        <div class="brand-name">GOLDEN <span>SPIN</span></div>
+        <div class="brand-sub">VIRTUAL CASINO</div>
       </div>
     </div>
 
-    <button class="vip-button" id="vipBtn">
-      <span class="vip-crown">♛</span>
-      <span>VIP</span>
-    </button>
-
+    <div class="account">
+      <div class="balance">
+        <span class="coin">●</span>
+        <strong id="balance">12500</strong>
+      </div>
+      <button class="vip-btn">VIP</button>
+    </div>
   </header>
 
+  <!-- HERO -->
+  <section class="hero">
 
-  <!-- =====================================
-       BALANCE BAR
-  ====================================== -->
+    <div class="hero-badge">✦ GOLDEN EXPERIENCE ✦</div>
 
-  <section class="balance-card">
+    <h1>ИГРАТЬ <span>/</span> SPIN</h1>
 
-    <div class="balance-left">
+    <p class="hero-text">
+      Испытай удачу в мире<br>
+      <strong>Golden Spin</strong>
+    </p>
 
-      <div class="coin">
-        <span>G</span>
-      </div>
-
-      <div class="balance-data">
-        <span class="balance-label">YOUR BALANCE</span>
-
-        <div class="balance-value-row">
-          <strong id="balance">12 550</strong>
-          <span class="token-name">TOKENS</span>
-        </div>
-      </div>
-
-    </div>
-
-    <button class="balance-plus" id="balancePlus">
-      +
+    <button class="main-spin" id="mainSpin">
+      <span>ИГРАТЬ / SPIN</span>
     </button>
 
+    <div class="hero-stats">
+      <div>
+        <span class="stat-icon">⚡</span>
+        <strong>24/7</strong>
+        <small>ИГРА</small>
+      </div>
+
+      <div>
+        <span class="stat-icon">♛</span>
+        <strong>VIP</strong>
+        <small>LEVEL</small>
+      </div>
+
+      <div>
+        <span class="stat-icon">★</span>
+        <strong>FREE</strong>
+        <small>BONUS</small>
+      </div>
+    </div>
   </section>
 
+  <!-- NAV -->
+  <nav class="game-nav">
 
-  <!-- =====================================
-       HERO
-  ====================================== -->
+    <button class="nav-card active" data-game="slots">
+      <span>🎰</span>
+      <b>Слоты</b>
+      <small>JACKPOT</small>
+    </button>
 
-  <main>
+    <button class="nav-card" data-game="roulette">
+      <span>🎲</span>
+      <b>Рулетка</b>
+      <small>ROULETTE</small>
+    </button>
 
-    <section class="hero">
+    <button class="nav-card" data-game="wheel">
+      <span>🎡</span>
+      <b>Колесо</b>
+      <small>FORTUNE</small>
+    </button>
 
-      <div class="hero-glow"></div>
+    <button class="nav-card" data-game="chests">
+      <span>🧰</span>
+      <b>Сундуки</b>
+      <small>REWARDS</small>
+    </button>
 
-      <div class="hero-content">
+    <button class="nav-card" data-game="break">
+      <span>🔨</span>
+      <b>Разбить</b>
+      <small>MINI GAME</small>
+    </button>
 
-        <span class="hero-kicker">
-          <i></i>
-          GOLDEN CASINO
-          <i></i>
-        </span>
+  </nav>
 
-        <h1>
-          PLAY
-          <span>TO WIN</span>
-        </h1>
+  <!-- GAME AREA -->
+  <main class="game-area">
 
-        <p>
-          Испытай удачу в мире<br>
-          Golden Spin
-        </p>
+    <!-- SLOTS -->
+    <section class="game-panel active" id="slots">
 
-        <button class="main-spin" id="mainSpin">
-
-          <span class="spin-shine"></span>
-
-          <span class="main-spin-icon">◆</span>
-
-          <span class="main-spin-text">
-            <strong>PLAY NOW</strong>
-            <small>КРУТИТЬ СЛОТЫ</small>
-          </span>
-
-          <span class="main-spin-arrow">›</span>
-
-        </button>
-
-      </div>
-
-      <div class="hero-coins">
-        <span class="floating-coin coin-a">G</span>
-        <span class="floating-coin coin-b">G</span>
-        <span class="floating-coin coin-c">G</span>
-      </div>
-
-    </section>
-
-
-    <!-- =====================================
-         QUICK STATS
-    ====================================== -->
-
-    <section class="quick-stats">
-
-      <div class="stat">
-        <span class="stat-icon">⚡</span>
+      <div class="panel-title">
+        <div class="title-icon">🎰</div>
         <div>
-          <strong>24/7</strong>
-          <small>ИГРА</small>
+          <h2>СЛОТЫ</h2>
+          <p>КРУТИ И ПОЛУЧАЙ ВИРТУАЛЬНЫЕ ТОКЕНЫ</p>
         </div>
       </div>
 
-      <div class="stat-divider"></div>
-
-      <div class="stat">
-        <span class="stat-icon">♛</span>
-        <div>
-          <strong>VIP</strong>
-          <small>LEVEL</small>
-        </div>
+      <div class="jackpot">
+        <span>✦ JACKPOT ✦</span>
+        <strong id="jackpot">250 000</strong>
       </div>
 
-      <div class="stat-divider"></div>
+      <div class="slot-machine">
 
-      <div class="stat">
-        <span class="stat-icon">★</span>
-        <div>
-          <strong>FREE</strong>
-          <small>BONUS</small>
-        </div>
-      </div>
+        <div class="slot-glow"></div>
 
-    </section>
-
-
-    <!-- =====================================
-         GAMES
-    ====================================== -->
-
-    <section class="games-section">
-
-      <div class="section-heading">
-
-        <div>
-          <span class="section-eyebrow">CHOOSE YOUR GAME</span>
-          <h2>Игры</h2>
+        <div class="reels">
+          <div class="reel" id="reel1">🍋</div>
+          <div class="reel" id="reel2">7️⃣</div>
+          <div class="reel" id="reel3">⭐</div>
         </div>
 
-        <span class="section-counter">05</span>
+        <div class="slot-line"></div>
+
+        <div class="slot-message" id="slotMessage">
+          Нажми SPIN
+        </div>
 
       </div>
 
+      <div class="controls">
 
-      <div class="games-grid">
+        <div class="bet-box">
+          <span>СТАВКА</span>
+          <select id="bet">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="500">500</option>
+          </select>
+        </div>
 
-        <!-- SLOTS -->
-
-        <button
-          class="game-card game-card-large active"
-          data-game="slots"
-        >
-
-          <div class="game-card-bg"></div>
-
-          <div class="game-card-top">
-            <span class="game-badge">HOT</span>
-            <span class="game-arrow">↗</span>
-          </div>
-
-          <div class="game-art slots-art">
-
-            <div class="mini-reel">
-              <span>7</span>
-            </div>
-
-            <div class="mini-reel center">
-              <span>◆</span>
-            </div>
-
-            <div class="mini-reel">
-              <span>7</span>
-            </div>
-
-          </div>
-
-          <div class="game-card-info">
-            <strong>Golden Slots</strong>
-            <span>Jackpot до x20</span>
-          </div>
-
-        </button>
-
-
-        <!-- ROULETTE -->
-
-        <button
-          class="game-card"
-          data-game="roulette"
-        >
-
-          <div class="game-card-bg"></div>
-
-          <div class="game-card-top">
-            <span class="game-number">02</span>
-            <span class="game-arrow">↗</span>
-          </div>
-
-          <div class="game-art roulette-art-small">
-
-            <div class="mini-roulette">
-              <div class="roulette-center">G</div>
-            </div>
-
-          </div>
-
-          <div class="game-card-info">
-            <strong>Roulette</strong>
-            <span>2x win</span>
-          </div>
-
-        </button>
-
-
-        <!-- WHEEL -->
-
-        <button
-          class="game-card"
-          data-game="wheel"
-        >
-
-          <div class="game-card-bg"></div>
-
-          <div class="game-card-top">
-            <span class="game-number">03</span>
-            <span class="game-arrow">↗</span>
-          </div>
-
-          <div class="game-art wheel-art-small">
-
-            <div class="mini-wheel">
-              <span>50</span>
-              <span>100</span>
-              <span>250</span>
-              <span>500</span>
-              <div class="wheel-center">G</div>
-            </div>
-
-          </div>
-
-          <div class="game-card-info">
-            <strong>Lucky Wheel</strong>
-            <span>До 500</span>
-          </div>
-
-        </button>
-
-
-        <!-- CHESTS -->
-
-        <button
-          class="game-card"
-          data-game="chests"
-        >
-
-          <div class="game-card-bg"></div>
-
-          <div class="game-card-top">
-            <span class="game-number">04</span>
-            <span class="game-arrow">↗</span>
-          </div>
-
-          <div class="game-art chest-art-small">
-
-            <div class="mini-chest">
-              <div class="chest-lock">◆</div>
-            </div>
-
-          </div>
-
-          <div class="game-card-info">
-            <strong>Mystery Chest</strong>
-            <span>Случайный приз</span>
-          </div>
-
-        </button>
-
-
-        <!-- SMASH -->
-
-        <button
-          class="game-card"
-          data-game="smash"
-        >
-
-          <div class="game-card-bg"></div>
-
-          <div class="game-card-top">
-            <span class="game-number">05</span>
-            <span class="game-arrow">↗</span>
-          </div>
-
-          <div class="game-art smash-art-small">
-
-            <div class="mini-block">
-              <span>GOLD</span>
-            </div>
-
-            <span class="mini-hammer">◆</span>
-
-          </div>
-
-          <div class="game-card-info">
-            <strong>Gold Smash</strong>
-            <span>Разбей и забери</span>
-          </div>
-
+        <button class="gold-button" id="spinButton">
+          <span>SPIN</span>
+          <small>− ставка</small>
         </button>
 
       </div>
 
     </section>
 
+    <!-- ROULETTE -->
+    <section class="game-panel" id="roulette">
 
-    <!-- =====================================
-         GAME CONTAINER
-    ====================================== -->
-
-    <section
-      id="game"
-      class="game-container"
-    ></section>
-
-
-    <!-- =====================================
-         DAILY BONUS
-    ====================================== -->
-
-    <section class="daily-section">
-
-      <div class="daily-card" id="dailyBonus">
-
-        <div class="daily-decoration"></div>
-
-        <div class="daily-icon">
-          <span>★</span>
+      <div class="panel-title">
+        <div class="title-icon">🎲</div>
+        <div>
+          <h2>РУЛЕТКА</h2>
+          <p>ВЫБЕРИ ЧИСЛО</p>
         </div>
-
-        <div class="daily-content">
-
-          <span class="daily-eyebrow">
-            DAILY REWARD
-          </span>
-
-          <strong>
-            Ежедневный бонус
-          </strong>
-
-          <span class="bonus-text">
-            Забери свои 250 токенов
-          </span>
-
-        </div>
-
-        <div class="daily-reward">
-          <strong>+250</strong>
-          <span>G</span>
-        </div>
-
-        <span class="daily-arrow">›</span>
-
       </div>
+
+      <div class="roulette-wrap">
+        <div class="roulette-pointer">▼</div>
+
+        <div class="roulette-wheel" id="rouletteWheel">
+          <div class="roulette-center">GS</div>
+        </div>
+      </div>
+
+      <div class="roulette-number" id="rouletteNumber">
+        READY
+      </div>
+
+      <button class="gold-button wide" id="rouletteButton">
+        КРУТИТЬ РУЛЕТКУ
+      </button>
 
     </section>
 
+    <!-- WHEEL -->
+    <section class="game-panel" id="wheel">
 
-    <!-- =====================================
-         LIVE ACTIVITY
-    ====================================== -->
-
-    <section class="activity-section">
-
-      <div class="section-heading">
-
+      <div class="panel-title">
+        <div class="title-icon">🎡</div>
         <div>
-          <span class="section-eyebrow">LIVE ACTIVITY</span>
-          <h2>Сейчас играют</h2>
+          <h2>КОЛЕСО ФОРТУНЫ</h2>
+          <p>ОДИН SPIN — ОДНА НАГРАДА</p>
         </div>
-
-        <span class="live-status">
-          <i></i>
-          LIVE
-        </span>
-
       </div>
 
+      <div class="fortune-area">
+        <div class="fortune-pointer">▼</div>
 
-      <div class="activity-list">
-
-        <div class="activity-item">
-
-          <div class="activity-avatar">A</div>
-
-          <div class="activity-user">
-            <strong>Alex</strong>
-            <span>Golden Slots</span>
-          </div>
-
-          <div class="activity-win">
-            <span>WIN</span>
-            <strong>+500</strong>
-          </div>
-
+        <div class="fortune-wheel" id="fortuneWheel">
+          <div class="fortune-center">★</div>
         </div>
-
-
-        <div class="activity-item">
-
-          <div class="activity-avatar">M</div>
-
-          <div class="activity-user">
-            <strong>Michael</strong>
-            <span>Lucky Wheel</span>
-          </div>
-
-          <div class="activity-win">
-            <span>WIN</span>
-            <strong>+250</strong>
-          </div>
-
-        </div>
-
-
-        <div class="activity-item">
-
-          <div class="activity-avatar">D</div>
-
-          <div class="activity-user">
-            <strong>Daniel</strong>
-            <span>Mystery Chest</span>
-          </div>
-
-          <div class="activity-win">
-            <span>WIN</span>
-            <strong>+150</strong>
-          </div>
-
-        </div>
-
       </div>
+
+      <div class="fortune-result" id="fortuneResult">
+        КРУТИ КОЛЕСО
+      </div>
+
+      <button class="gold-button wide" id="fortuneButton">
+        КРУТИТЬ
+      </button>
 
     </section>
 
+    <!-- CHESTS -->
+    <section class="game-panel" id="chests">
 
-    <!-- =====================================
-         LEADERBOARD
-    ====================================== -->
-
-    <section class="leaderboard-section">
-
-      <div class="section-heading">
-
+      <div class="panel-title">
+        <div class="title-icon">🧰</div>
         <div>
-          <span class="section-eyebrow">TOP PLAYERS</span>
-          <h2>Лидеры</h2>
+          <h2>СУНДУКИ</h2>
+          <p>ВЫБЕРИ ОДИН СУНДУК</p>
         </div>
+      </div>
 
-        <button class="leaderboard-more">
-          ALL
+      <div class="chests">
+
+        <button class="chest" data-reward="100">
+          <span>🧰</span>
+          <b>BRONZE</b>
+          <small>100–300</small>
+        </button>
+
+        <button class="chest premium" data-reward="500">
+          <span>🧰</span>
+          <b>GOLD</b>
+          <small>500–1 500</small>
+        </button>
+
+        <button class="chest vip-chest" data-reward="1500">
+          <span>👑</span>
+          <b>ROYAL</b>
+          <small>1 500–5 000</small>
         </button>
 
       </div>
 
-
-      <div class="leaderboard">
-
-        <div class="leader leader-first">
-
-          <div class="leader-rank">
-            <span>1</span>
-          </div>
-
-          <div class="leader-avatar">
-            A
-          </div>
-
-          <div class="leader-user">
-            <strong>Alex</strong>
-            <span>VIP PLAYER</span>
-          </div>
-
-          <div class="leader-score">
-            <strong>28 450</strong>
-            <span>G</span>
-          </div>
-
-        </div>
-
-
-        <div class="leader">
-
-          <div class="leader-rank">
-            <span>2</span>
-          </div>
-
-          <div class="leader-avatar">
-            M
-          </div>
-
-          <div class="leader-user">
-            <strong>Michael</strong>
-            <span>GOLD PLAYER</span>
-          </div>
-
-          <div class="leader-score">
-            <strong>21 200</strong>
-            <span>G</span>
-          </div>
-
-        </div>
-
-
-        <div class="leader">
-
-          <div class="leader-rank">
-            <span>3</span>
-          </div>
-
-          <div class="leader-avatar">
-            S
-          </div>
-
-          <div class="leader-user">
-            <strong>Samuel</strong>
-            <span>PLAYER</span>
-          </div>
-
-          <div class="leader-score">
-            <strong>17 850</strong>
-            <span>G</span>
-          </div>
-
-        </div>
-
+      <div class="chest-result" id="chestResult">
+        ВЫБЕРИ СУНДУК
       </div>
 
     </section>
 
+    <!-- BREAK -->
+    <section class="game-panel" id="break">
 
-    <!-- =====================================
-         VIP PROMO
-    ====================================== -->
+      <div class="panel-title">
+        <div class="title-icon">🔨</div>
+        <div>
+          <h2>РАЗБИТЬ БЛОК</h2>
+          <p>НАЙДИ НАГРАДУ</p>
+        </div>
+      </div>
 
-    <section class="vip-promo">
+      <div class="blocks" id="blocks">
 
-      <div class="vip-promo-glow"></div>
-
-      <div class="vip-promo-content">
-
-        <span class="vip-promo-label">
-          EXCLUSIVE
-        </span>
-
-        <h2>
-          GOLDEN
-          <span>VIP</span>
-        </h2>
-
-        <p>
-          Особый статус для<br>
-          настоящих игроков
-        </p>
-
-        <button id="vipPromoButton">
-          УЗНАТЬ БОЛЬШЕ
-          <span>→</span>
-        </button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
+        <button class="block">?</button>
 
       </div>
 
-      <div class="vip-crown-large">
-        ♛
+      <div class="break-result" id="breakResult">
+        ВЫБЕРИ БЛОК
       </div>
 
     </section>
 
   </main>
 
+  <!-- BONUS -->
+  <section class="bonus-card">
 
-  <!-- =====================================
-       BOTTOM NAVIGATION
-  ====================================== -->
+    <div class="bonus-decoration">✦</div>
 
-  <nav class="bottom-nav">
-
-    <button
-      class="nav-item active"
-      data-nav="home"
-    >
-      <span class="nav-icon">◆</span>
-      <small>Главная</small>
-    </button>
-
-    <button
-      class="nav-item"
-      data-nav="games"
-    >
-      <span class="nav-icon">♜</span>
-      <small>Игры</small>
-    </button>
-
-    <button
-      class="nav-center"
-      id="navSpin"
-    >
-      <span class="nav-center-glow"></span>
-      <span>G</span>
-    </button>
-
-    <button
-      class="nav-item"
-      data-nav="bonus"
-    >
-      <span class="nav-icon">★</span>
-      <small>Бонус</small>
-    </button>
-
-    <button
-      class="nav-item"
-      data-nav="profile"
-    >
-      <span class="nav-icon">♙</span>
-      <small>Профиль</small>
-    </button>
-
-  </nav>
-
-
-  <!-- =====================================
-       FOOTER
-  ====================================== -->
-
-  <footer class="footer">
-
-    <div class="footer-brand">
-      ◆ GOLDEN SPIN
+    <div class="bonus-text">
+      <span>ЕЖЕДНЕВНЫЙ БОНУС</span>
+      <strong>+500 TOKENS</strong>
+      <small>Виртуальная награда</small>
     </div>
 
-    <p>
-      Virtual tokens only
-    </p>
-
-    <button id="soundToggle">
-      🔊 Звук
+    <button id="bonusButton">
+      ЗАБРАТЬ
     </button>
 
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">◆ GOLDEN SPIN</div>
+    <p>Игра использует только виртуальные игровые токены.</p>
+    <p>Токены не являются денежными средствами и не выводятся в деньги.</p>
   </footer>
-
-
-  <!-- =====================================
-       TOAST
-  ====================================== -->
-
-  <div
-    class="toast"
-    id="toast"
-  ></div>
-
-
-  <!-- =====================================
-       WIN MODAL
-  ====================================== -->
-
-  <div
-    class="modal"
-    id="modal"
-  >
-
-    <div class="modal-backdrop"></div>
-
-    <div class="win-modal">
-
-      <div class="win-particles">
-        <i></i>
-        <i></i>
-        <i></i>
-        <i></i>
-        <i></i>
-        <i></i>
-        <i></i>
-        <i></i>
-      </div>
-
-      <button
-        class="modal-close"
-        id="closeModal"
-      >
-        ×
-      </button>
-
-      <div class="win-crown">
-        ♛
-      </div>
-
-      <span class="win-label">
-        CONGRATULATIONS
-      </span>
-
-      <h2>
-        YOU WIN!
-      </h2>
-
-      <div class="win-amount-box">
-
-        <span>+</span>
-
-        <strong id="winAmount">
-          250
-        </strong>
-
-        <small>
-          TOKENS
-        </small>
-
-      </div>
-
-      <div class="win-divider"></div>
-
-      <p>
-        Выигрыш зачислен<br>
-        на ваш баланс
-      </p>
-
-      <button
-        class="modal-main-button"
-        id="winContinue"
-      >
-        ПРОДОЛЖИТЬ
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================
-       VIP MODAL
-  ====================================== -->
-
-  <div
-    class="modal"
-    id="vipModal"
-  >
-
-    <div class="modal-backdrop"></div>
-
-    <div class="vip-modal">
-
-      <button
-        class="modal-close"
-        id="closeVipModal"
-      >
-        ×
-      </button>
-
-      <div class="vip-modal-crown">
-        ♛
-      </div>
-
-      <span class="vip-modal-label">
-        GOLDEN CLUB
-      </span>
-
-      <h2>
-        VIP
-        <span>STATUS</span>
-      </h2>
-
-      <p>
-        Получай особый статус,<br>
-        бонусы и привилегии.
-      </p>
-
-      <div class="vip-benefits">
-
-        <div>
-          <span>◆</span>
-          <strong>VIP BONUS</strong>
-          <small>Дополнительные награды</small>
-        </div>
-
-        <div>
-          <span>◆</span>
-          <strong>EXCLUSIVE</strong>
-          <small>Особые игровые события</small>
-        </div>
-
-        <div>
-          <span>◆</span>
-          <strong>GOLD STATUS</strong>
-          <small>Особый профиль</small>
-        </div>
-
-      </div>
-
-      <button
-        class="modal-main-button"
-        id="vipClose"
-      >
-        ПОНЯТНО
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================
-       PROFILE MODAL
-  ====================================== -->
-
-  <div
-    class="modal"
-    id="profileModal"
-  >
-
-    <div class="modal-backdrop"></div>
-
-    <div class="profile-modal">
-
-      <button
-        class="modal-close"
-        id="closeProfileModal"
-      >
-        ×
-      </button>
-
-      <div class="profile-big-avatar">
-        <span id="profileBigLetter">G</span>
-      </div>
-
-      <span class="profile-modal-label">
-        GOLDEN PLAYER
-      </span>
-
-      <h2 id="profileName">
-        Golden Player
-      </h2>
-
-      <div class="profile-stats">
-
-        <div>
-          <strong id="profileBalance">12 550</strong>
-          <span>Баланс</span>
-        </div>
-
-        <div>
-          <strong>05</strong>
-          <span>Игры</span>
-        </div>
-
-        <div>
-          <strong>VIP</strong>
-          <span>Статус</span>
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
 
 </div>
 
-
-<script src="app.js"></script>
+<!-- JS -->
+<script src="./app.js"></script>
 
 </body>
 </html>
