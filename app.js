@@ -3,45 +3,49 @@ const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready();
   tg.expand();
-  tg.setHeaderColor("#070504");
-  tg.setBackgroundColor("#070504");
+
+  try {
+    tg.setHeaderColor("#090604");
+    tg.setBackgroundColor("#090604");
+  } catch (_) {}
 }
+
+
+/* =========================
+   STATE
+========================= */
 
 const state = {
   balance: Number(localStorage.getItem("golden_balance")) || 12500,
   sound: localStorage.getItem("golden_sound") !== "off",
   lastBonus: localStorage.getItem("golden_bonus") || null,
-  currentGame: null
+  currentGame: "slots",
+  busy: false
 };
+
+
+/* =========================
+   HELPERS
+========================= */
 
 const $ = (selector) => document.querySelector(selector);
 
 const balanceEl = $("#balance");
+const gameArea = $("#game");
 const toastEl = $("#toast");
-const gameArea = $("#gameArea");
-const modal = $("#modal");
 
 function formatNumber(number) {
   return Math.floor(number).toLocaleString("ru-RU");
 }
 
 function save() {
-  localStorage.setItem("golden_balance", state.balance);
+  localStorage.setItem("golden_balance", String(state.balance));
 }
 
 function updateBalance() {
-  balanceEl.textContent = formatNumber(state.balance);
-}
-
-function toast(message) {
-  toastEl.textContent = message;
-  toastEl.classList.add("show");
-
-  clearTimeout(toast.timer);
-
-  toast.timer = setTimeout(() => {
-    toastEl.classList.remove("show");
-  }, 2200);
+  if (balanceEl) {
+    balanceEl.textContent = formatNumber(state.balance);
+  }
 }
 
 function changeBalance(amount) {
@@ -55,123 +59,121 @@ function changeBalance(amount) {
   updateBalance();
 }
 
-function playSound(type) {
+function toast(message) {
+  if (!toastEl) return;
+
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+
+  clearTimeout(toast.timer);
+
+  toast.timer = setTimeout(() => {
+    toastEl.classList.remove("show");
+  }, 2200);
+}
+
+
+/* =========================
+   SOUND
+========================= */
+
+let audioContext = null;
+
+function getAudioContext() {
+  if (!audioContext) {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (!AudioContext) return null;
+
+    audioContext = new AudioContext();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+
+  return audioContext;
+}
+
+function playTone(frequency, duration = 0.12, type = "sine", volume = 0.07) {
   if (!state.sound) return;
 
-  /*
-    Пока без внешних mp3:
-    создаём короткий звук через Web Audio API.
-    Позже сюда можно подключить реальные
-    casino-style звуковые файлы.
-  */
-
   try {
-    const AudioContext =
-      window.AudioContext || window.webkitAudioContext;
+    const ctx = getAudioContext();
 
-    if (!AudioContext) return;
+    if (!ctx) return;
 
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
+    const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    const frequencies = {
-      click: 520,
-      spin: 220,
-      win: 780,
-      bigwin: 1100
-    };
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
 
-    osc.frequency.value = frequencies[type] || 520;
-    osc.type = type === "bigwin" ? "triangle" : "sine";
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
 
-    gain.gain.setValueAtTime(.0001, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(
-      .08,
-      ctx.currentTime + .01
+      volume,
+      ctx.currentTime + 0.015
     );
 
     gain.gain.exponentialRampToValueAtTime(
-      .0001,
-      ctx.currentTime + (type === "spin" ? .45 : .16)
+      0.0001,
+      ctx.currentTime + duration
     );
 
-    osc.connect(gain);
+    oscillator.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.start();
-    osc.stop(
-      ctx.currentTime +
-      (type === "spin" ? .45 : .16)
-    );
-
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + duration);
   } catch (_) {}
 }
 
-function openModal(title, value, text) {
-  $("#modalTitle").textContent = title;
-  $("#modalValue").textContent = value;
-  $("#modalText").textContent = text;
+function playSound(type) {
+  if (!state.sound) return;
 
-  modal.classList.add("open");
+  if (type === "click") {
+    playTone(520, 0.08);
+    return;
+  }
 
-  playSound(
-    String(value).includes("1000")
-      ? "bigwin"
-      : "win"
-  );
+  if (type === "spin") {
+    playTone(180, 0.35, "triangle", 0.05);
+    return;
+  }
+
+  if (type === "win") {
+    playTone(660, 0.12);
+    setTimeout(() => playTone(880, 0.16), 90);
+    return;
+  }
+
+  if (type === "bigwin") {
+    playTone(660, 0.12);
+    setTimeout(() => playTone(880, 0.12), 100);
+    setTimeout(() => playTone(1100, 0.22), 210);
+  }
 }
 
-function closeModal() {
-  modal.classList.remove("open");
+
+/* =========================
+   SOUND BUTTON
+========================= */
+
+function updateSoundButton() {
+  const button = $("#soundToggle");
+
+  if (!button) return;
+
+  button.textContent =
+    state.sound
+      ? "🔊 ЗВУК"
+      : "🔇 ЗВУК";
 }
 
-$("#modalClose").addEventListener("click", closeModal);
-$("#modalButton").addEventListener("click", closeModal);
-
-modal.addEventListener("click", (event) => {
-  if (event.target === modal) {
-    closeModal();
-  }
-});
-
-
-/* PROFILE */
-
-$("#profileButton").addEventListener("click", () => {
-  playSound("click");
-
-  const user = tg?.initDataUnsafe?.user;
-
-  if (user) {
-    $("#profileLetter").textContent =
-      (user.first_name || "G")[0].toUpperCase();
-
-    toast(
-      `Привет, ${user.first_name || "игрок"}!`
-    );
-  } else {
-    toast("Профиль Golden Player");
-  }
-});
-
-
-/* VIP */
-
-$("#vipButton").addEventListener("click", () => {
-  playSound("click");
-
-  openModal(
-    "VIP CLUB",
-    "VIP",
-    "VIP-функции будут доступны в следующей версии Golden Spin."
-  );
-});
-
-
-/* SOUND */
-
-function toggleSound() {
+$("#soundToggle")?.addEventListener("click", () => {
   state.sound = !state.sound;
 
   localStorage.setItem(
@@ -179,7 +181,7 @@ function toggleSound() {
     state.sound ? "on" : "off"
   );
 
-  updateSoundButtons();
+  updateSoundButton();
 
   if (state.sound) {
     playSound("click");
@@ -187,25 +189,113 @@ function toggleSound() {
   } else {
     toast("Звук выключен");
   }
+});
+
+
+/* =========================
+   PROFILE
+========================= */
+
+$("#profileButton")?.addEventListener("click", () => {
+  playSound("click");
+
+  const user = tg?.initDataUnsafe?.user;
+
+  const letter =
+    user?.first_name?.charAt(0)?.toUpperCase() || "G";
+
+  const profileLetter = $("#profileLetter");
+
+  if (profileLetter) {
+    profileLetter.textContent = letter;
+  }
+
+  toast(
+    user
+      ? `Привет, ${user.first_name}!`
+      : "Golden Player"
+  );
+});
+
+
+/* =========================
+   VIP
+========================= */
+
+$("#vipButton")?.addEventListener("click", () => {
+  playSound("click");
+
+  const modal = $("#vipModal");
+
+  if (modal) {
+    modal.classList.add("open");
+  }
+});
+
+$("#closeVip")?.addEventListener("click", () => {
+  $("#vipModal")?.classList.remove("open");
+});
+
+$("#vipModal")?.addEventListener("click", (event) => {
+  if (event.target.id === "vipModal") {
+    event.currentTarget.classList.remove("open");
+  }
+});
+
+
+/* =========================
+   WIN MODAL
+========================= */
+
+function showWin(amount, title = "ВЫИГРЫШ!") {
+  const modal = $("#winModal");
+  const amountEl = $("#winAmount");
+
+  if (!modal) {
+    toast(`+${formatNumber(amount)} токенов`);
+    return;
+  }
+
+  if (amountEl) {
+    amountEl.textContent =
+      `+${formatNumber(amount)}`;
+  }
+
+  const titleEl = modal.querySelector("h2");
+
+  if (titleEl) {
+    titleEl.textContent = title;
+  }
+
+  modal.classList.add("open");
+
+  playSound(
+    amount >= 1000
+      ? "bigwin"
+      : "win"
+  );
 }
 
-function updateSoundButtons() {
-  $("#soundButton").textContent =
-    state.sound ? "🔊" : "🔇";
-
-  $("#soundFooter").textContent =
-    state.sound ? "🔊 SOUND" : "🔇 SOUND";
+function closeWin() {
+  $("#winModal")?.classList.remove("open");
 }
 
-$("#soundButton").addEventListener("click", toggleSound);
-$("#soundFooter").addEventListener("click", toggleSound);
+$("#closeWin")?.addEventListener("click", closeWin);
+
+$("#winModal")?.addEventListener("click", (event) => {
+  if (event.target.id === "winModal") {
+    closeWin();
+  }
+});
 
 
-/* DAILY BONUS */
+/* =========================
+   DAILY BONUS
+========================= */
 
-$("#dailyBonus").addEventListener("click", () => {
-
-  const today = new Date().toISOString().slice(0, 10);
+$("#dailyBonus")?.addEventListener("click", () => {
+  const today =
+    new Date().toISOString().slice(0, 10);
 
   if (state.lastBonus === today) {
     toast("Бонус уже получен сегодня");
@@ -221,122 +311,174 @@ $("#dailyBonus").addEventListener("click", () => {
 
   changeBalance(250);
 
-  openModal(
-    "ЕЖЕДНЕВНЫЙ БОНУС",
-    "+250",
-    "250 виртуальных токенов добавлены на баланс."
-  );
+  showWin(250, "ЕЖЕДНЕВНЫЙ БОНУС");
 });
 
 
-/* HERO */
+/* =========================
+   HERO BUTTON
+========================= */
 
-$("#heroPlay").addEventListener("click", () => {
-
+$("#heroSpin")?.addEventListener("click", () => {
   playSound("click");
 
-  document
-    .querySelector(".games")
-    .scrollIntoView({
-      behavior: "smooth"
-    });
+  openGame("slots");
 
   setTimeout(() => {
-    openGame("slots");
-  }, 450);
+    gameArea?.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }, 100);
 });
 
 
-/* GAME CARDS */
+/* =========================
+   GAME CARDS
+========================= */
 
-document.querySelectorAll(".game-card").forEach(card => {
+document
+  .querySelectorAll(".game-card")
+  .forEach(card => {
 
-  card.addEventListener("click", () => {
+    card.addEventListener("click", () => {
 
-    const game = card.dataset.game;
+      const game = card.dataset.game;
 
-    playSound("click");
+      if (!game) return;
 
-    openGame(game);
+      playSound("click");
 
-    document
-      .querySelectorAll(".game-card")
-      .forEach(c => c.classList.remove("selected"));
+      document
+        .querySelectorAll(".game-card")
+        .forEach(item => {
+          item.classList.remove("active");
+        });
 
-    card.classList.add("selected");
+      card.classList.add("active");
+
+      openGame(game);
+    });
+
   });
 
-});
 
+/* =========================
+   OPEN GAME
+========================= */
 
 function openGame(game) {
 
-  state.currentGame = game;
-
-  const games = {
-    slots: renderSlots,
-    roulette: renderRoulette,
-    wheel: renderWheel,
-    chests: renderChests,
-    smash: renderSmash
-  };
-
-  if (games[game]) {
-    games[game]();
+  if (!gameArea) {
+    console.error("Не найден #game");
+    return;
   }
 
-  gameArea.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
+  state.currentGame = game;
+  state.busy = false;
+
+  switch (game) {
+
+    case "slots":
+      renderSlots();
+      break;
+
+    case "roulette":
+      renderRoulette();
+      break;
+
+    case "wheel":
+      renderWheel();
+      break;
+
+    case "chests":
+      renderChests();
+      break;
+
+    case "smash":
+      renderSmash();
+      break;
+
+    default:
+      renderSlots();
+  }
+
+  setTimeout(() => {
+    gameArea.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }, 80);
 }
 
 
-/* SLOTS */
+/* =========================
+   SLOTS
+========================= */
 
 function renderSlots() {
 
   gameArea.innerHTML = `
     <div class="game-screen">
-      <span class="mini-label">GOLDEN JACKPOT</span>
+
+      <span class="mini-label">
+        GOLDEN JACKPOT
+      </span>
+
       <h2>🎰 SLOTS</h2>
 
       <div class="slot-machine">
+
         <div class="slot-reels">
+
           <div class="slot-reel">7</div>
           <div class="slot-reel">BAR</div>
           <div class="slot-reel">7</div>
+
         </div>
 
         <div class="slot-controls">
 
           <div class="bet">
+
             <span>СТАВКА</span>
-            <strong id="slotBet">50</strong>
+
+            <strong id="slotBet">
+              50
+            </strong>
+
           </div>
 
           <div class="bet-buttons">
+
             <button data-bet="10">10</button>
             <button data-bet="50">50</button>
             <button data-bet="100">100</button>
             <button data-bet="250">250</button>
+
           </div>
 
-          <button class="game-action" id="slotSpin">
+          <button
+            class="game-action"
+            id="slotSpin"
+          >
             SPIN
           </button>
 
         </div>
+
       </div>
+
     </div>
   `;
+
+  let bet = 50;
 
   const reels =
     gameArea.querySelectorAll(".slot-reel");
 
-  let bet = 50;
-
-  gameArea.querySelectorAll("[data-bet]")
+  gameArea
+    .querySelectorAll("[data-bet]")
     .forEach(button => {
 
       button.addEventListener("click", () => {
@@ -346,135 +488,189 @@ function renderSlots() {
         $("#slotBet").textContent = bet;
 
         playSound("click");
+
       });
+
     });
 
 
   $("#slotSpin").addEventListener("click", () => {
+
+    if (state.busy) return;
 
     if (state.balance < bet) {
       toast("Недостаточно токенов");
       return;
     }
 
+    state.busy = true;
+
     changeBalance(-bet);
 
     playSound("spin");
 
+    const symbols = [
+      "7",
+      "BAR",
+      "◆",
+      "777",
+      "GOLD"
+    ];
+
     reels.forEach((reel, index) => {
 
-      reel.style.animation =
-        "slotSpin .55s ease";
+      reel.classList.add("spinning");
 
       setTimeout(() => {
 
-        const symbols =
-          ["7", "BAR", "◆", "777", "GOLD"];
-
         reel.textContent =
-          symbols[Math.floor(Math.random() * symbols.length)];
+          symbols[
+            Math.floor(
+              Math.random() * symbols.length
+            )
+          ];
 
-        reel.style.animation = "";
+        reel.classList.remove("spinning");
 
-      }, 500 + index * 220);
+      }, 650 + index * 250);
+
     });
+
 
     setTimeout(() => {
 
-      const win =
-        Math.random() < .27;
+      const roll = Math.random();
 
-      if (win) {
+      let reward = 0;
 
-        const multiplier =
-          Math.random() < .08 ? 20 :
-          Math.random() < .25 ? 10 :
-          4;
+      if (roll < 0.05) {
+        reward = bet * 20;
+      }
+      else if (roll < 0.16) {
+        reward = bet * 10;
+      }
+      else if (roll < 0.32) {
+        reward = bet * 4;
+      }
 
-        const reward = bet * multiplier;
+      if (reward > 0) {
 
         changeBalance(reward);
 
-        openModal(
-          multiplier >= 20
+        showWin(
+          reward,
+          reward >= bet * 20
             ? "JACKPOT!"
-            : "ВЫИГРЫШ!",
-          `+${formatNumber(reward)}`,
-          `Комбинация принесла ${multiplier}× ставки.`
+            : "ВЫИГРЫШ!"
         );
 
       } else {
 
-        toast("Попробуй ещё раз");
+        toast("Повезёт в следующий раз");
 
       }
 
-    }, 1250);
+      state.busy = false;
+
+    }, 1500);
 
   });
 }
 
 
-/* ROULETTE */
+/* =========================
+   ROULETTE
+========================= */
 
 function renderRoulette() {
 
   gameArea.innerHTML = `
     <div class="game-screen">
-      <span class="mini-label">EURO ROULETTE</span>
+
+      <span class="mini-label">
+        EURO ROULETTE
+      </span>
+
       <h2>🎡 РУЛЕТКА</h2>
 
       <div class="roulette-game">
 
         <div class="big-roulette">
+
           <div class="roulette-ball"></div>
+
           <span>0</span>
+
         </div>
 
         <div class="roulette-controls">
 
           <div class="bet">
+
             <span>СТАВКА</span>
+
             <strong>50</strong>
+
           </div>
 
           <div class="color-bets">
-            <button data-color="red">КРАСНОЕ</button>
-            <button data-color="black">ЧЁРНОЕ</button>
-            <button data-color="green">ZERO</button>
+
+            <button data-color="red">
+              КРАСНОЕ
+            </button>
+
+            <button data-color="black">
+              ЧЁРНОЕ
+            </button>
+
+            <button data-color="green">
+              ZERO
+            </button>
+
           </div>
 
-          <button class="game-action" id="rouletteSpin">
+          <button
+            class="game-action"
+            id="rouletteSpin"
+          >
             SPIN ROULETTE
           </button>
 
         </div>
 
       </div>
+
     </div>
   `;
 
   let selected = "red";
 
-  gameArea.querySelectorAll("[data-color]")
+  gameArea
+    .querySelectorAll("[data-color]")
     .forEach(button => {
 
       button.addEventListener("click", () => {
+
         selected = button.dataset.color;
 
         gameArea
           .querySelectorAll("[data-color]")
-          .forEach(x => x.classList.remove("active"));
+          .forEach(item =>
+            item.classList.remove("active")
+          );
 
         button.classList.add("active");
 
         playSound("click");
+
       });
 
     });
 
 
   $("#rouletteSpin").addEventListener("click", () => {
+
+    if (state.busy) return;
 
     const bet = 50;
 
@@ -483,12 +679,14 @@ function renderRoulette() {
       return;
     }
 
+    state.busy = true;
+
     changeBalance(-bet);
+
+    playSound("spin");
 
     const wheel =
       gameArea.querySelector(".big-roulette");
-
-    playSound("spin");
 
     wheel.classList.add("spinning");
 
@@ -500,11 +698,13 @@ function renderRoulette() {
 
       let result;
 
-      if (roll < .47) {
+      if (roll < 0.47) {
         result = "red";
-      } else if (roll < .94) {
+      }
+      else if (roll < 0.94) {
         result = "black";
-      } else {
+      }
+      else {
         result = "green";
       }
 
@@ -517,16 +717,24 @@ function renderRoulette() {
 
         changeBalance(reward);
 
-        openModal(
-          "РУЛЕТКА",
-          `+${formatNumber(reward)}`,
-          "Ставка выиграла."
+        showWin(
+          reward,
+          "РУЛЕТКА"
         );
 
       } else {
 
-        toast("Не повезло. Следующий спин!");
+        toast(
+          `Выпало ${result === "green"
+            ? "ZERO"
+            : result === "red"
+              ? "КРАСНОЕ"
+              : "ЧЁРНОЕ"}`
+        );
+
       }
+
+      state.busy = false;
 
     }, 2200);
 
@@ -534,31 +742,51 @@ function renderRoulette() {
 }
 
 
-/* WHEEL */
+/* =========================
+   FORTUNE WHEEL
+========================= */
 
 function renderWheel() {
 
   gameArea.innerHTML = `
     <div class="game-screen">
-      <span class="mini-label">FORTUNE WHEEL</span>
+
+      <span class="mini-label">
+        FORTUNE WHEEL
+      </span>
+
       <h2>🎡 КОЛЕСО УДАЧИ</h2>
 
       <div class="fortune-game">
 
         <div class="fortune-big">
-          <div class="pointer">▼</div>
-          <div class="fortune-center">◆</div>
+
+          <div class="pointer">
+            ▼
+          </div>
+
+          <div class="fortune-center">
+            ◆
+          </div>
+
         </div>
 
-        <button class="game-action" id="fortuneSpin">
+        <button
+          class="game-action"
+          id="fortuneSpin"
+        >
           SPIN
         </button>
 
       </div>
+
     </div>
   `;
 
+
   $("#fortuneSpin").addEventListener("click", () => {
+
+    if (state.busy) return;
 
     const bet = 50;
 
@@ -566,6 +794,8 @@ function renderWheel() {
       toast("Недостаточно токенов");
       return;
     }
+
+    state.busy = true;
 
     changeBalance(-bet);
 
@@ -580,27 +810,39 @@ function renderWheel() {
 
       wheel.classList.remove("spinning");
 
-      const rewards =
-        [0, 50, 100, 150, 250, 500, 1000];
+      const rewards = [
+        0,
+        50,
+        100,
+        150,
+        250,
+        500,
+        1000
+      ];
 
       const reward =
-        rewards[Math.floor(Math.random() * rewards.length)];
+        rewards[
+          Math.floor(
+            Math.random() * rewards.length
+          )
+        ];
 
       if (reward > 0) {
 
         changeBalance(reward);
 
-        openModal(
-          "КОЛЕСО УДАЧИ",
-          `+${formatNumber(reward)}`,
-          "Поздравляем! Награда добавлена."
+        showWin(
+          reward,
+          "КОЛЕСО УДАЧИ"
         );
 
       } else {
 
-        toast("Пустой сектор. Ещё раз!");
+        toast("Пустой сектор");
 
       }
+
+      state.busy = false;
 
     }, 2500);
 
@@ -608,33 +850,61 @@ function renderWheel() {
 }
 
 
-/* CHESTS */
+/* =========================
+   CHESTS
+========================= */
 
 function renderChests() {
 
   gameArea.innerHTML = `
     <div class="game-screen">
-      <span class="mini-label">TREASURE ROOM</span>
+
+      <span class="mini-label">
+        TREASURE ROOM
+      </span>
+
       <h2>🧰 GOLD CHESTS</h2>
 
       <div class="chest-game">
 
-        <button class="open-chest" data-chest="0">◆</button>
-        <button class="open-chest" data-chest="1">◆</button>
-        <button class="open-chest" data-chest="2">◆</button>
+        <button
+          class="open-chest"
+          data-chest="0"
+        >
+          ◆
+        </button>
+
+        <button
+          class="open-chest"
+          data-chest="1"
+        >
+          ◆
+        </button>
+
+        <button
+          class="open-chest"
+          data-chest="2"
+        >
+          ◆
+        </button>
 
       </div>
 
       <p class="game-note">
         Выбери один сундук
       </p>
+
     </div>
   `;
 
-  gameArea.querySelectorAll(".open-chest")
+
+  gameArea
+    .querySelectorAll(".open-chest")
     .forEach(chest => {
 
       chest.addEventListener("click", () => {
+
+        if (state.busy) return;
 
         const cost = 50;
 
@@ -642,6 +912,8 @@ function renderChests() {
           toast("Недостаточно токенов");
           return;
         }
+
+        state.busy = true;
 
         changeBalance(-cost);
 
@@ -651,8 +923,13 @@ function renderChests() {
 
         setTimeout(() => {
 
-          const rewards =
-            [25, 75, 150, 300, 750];
+          const rewards = [
+            25,
+            75,
+            150,
+            300,
+            750
+          ];
 
           const reward =
             rewards[
@@ -663,13 +940,14 @@ function renderChests() {
 
           changeBalance(reward);
 
-          openModal(
-            "СУНДУК ОТКРЫТ!",
-            `+${formatNumber(reward)}`,
-            "Ты нашёл виртуальную награду."
+          showWin(
+            reward,
+            "СУНДУК ОТКРЫТ!"
           );
 
-        }, 700);
+          state.busy = false;
+
+        }, 800);
 
       });
 
@@ -677,18 +955,27 @@ function renderChests() {
 }
 
 
-/* SMASH */
+/* =========================
+   SMASH
+========================= */
 
 function renderSmash() {
 
   gameArea.innerHTML = `
     <div class="game-screen">
-      <span class="mini-label">BREAK & WIN</span>
+
+      <span class="mini-label">
+        BREAK & WIN
+      </span>
+
       <h2>🔨 GOLD SMASH</h2>
 
       <div class="smash-game">
 
-        <button class="smash-block" id="smashBlock">
+        <button
+          class="smash-block"
+          id="smashBlock"
+        >
           ?
         </button>
 
@@ -697,10 +984,14 @@ function renderSmash() {
         </p>
 
       </div>
+
     </div>
   `;
 
+
   $("#smashBlock").addEventListener("click", () => {
+
+    if (state.busy) return;
 
     const cost = 25;
 
@@ -708,6 +999,8 @@ function renderSmash() {
       toast("Недостаточно токенов");
       return;
     }
+
+    state.busy = true;
 
     changeBalance(-cost);
 
@@ -719,18 +1012,29 @@ function renderSmash() {
 
     setTimeout(() => {
 
-      const reward =
-        [0, 25, 50, 100, 250, 500]
-        [Math.floor(Math.random() * 6)];
+      const rewards = [
+        0,
+        25,
+        50,
+        100,
+        250,
+        500
+      ];
 
-      if (reward) {
+      const reward =
+        rewards[
+          Math.floor(
+            Math.random() * rewards.length
+          )
+        ];
+
+      if (reward > 0) {
 
         changeBalance(reward);
 
-        openModal(
-          "БЛОК РАЗБИТ!",
-          `+${formatNumber(reward)}`,
-          "Награда добавлена на баланс."
+        showWin(
+          reward,
+          "БЛОК РАЗБИТ!"
         );
 
       } else {
@@ -741,13 +1045,37 @@ function renderSmash() {
 
       block.classList.remove("broken");
 
-    }, 500);
+      state.busy = false;
+
+    }, 600);
 
   });
 }
 
 
-/* INITIAL */
+/* =========================
+   TOURNAMENT
+========================= */
+
+$("#tournamentButton")?.addEventListener(
+  "click",
+  () => {
+
+    playSound("click");
+
+    toast(
+      "Турнир скоро будет доступен"
+    );
+
+  }
+);
+
+
+/* =========================
+   START
+========================= */
 
 updateBalance();
-updateSoundButtons();
+updateSoundButton();
+
+openGame("slots");
