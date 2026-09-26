@@ -1,6 +1,6 @@
 /* =========================================================
-   GOLDEN SPIN
-   Virtual-token casino game
+   GOLDEN SPIN — APP.JS
+   5 WORKING GAMES
    ========================================================= */
 
 const tg = window.Telegram?.WebApp;
@@ -10,8 +10,8 @@ if (tg) {
   tg.expand();
 
   try {
-    tg.setHeaderColor("#080604");
-    tg.setBackgroundColor("#080604");
+    tg.setHeaderColor("#070504");
+    tg.setBackgroundColor("#070504");
   } catch (_) {}
 }
 
@@ -20,27 +20,24 @@ if (tg) {
    STATE
    ========================================================= */
 
-const saved = JSON.parse(
-  localStorage.getItem("golden_spin_state") || "null"
-);
+const state = {
+  balance: Number(localStorage.getItem("golden_balance")) || 12500,
+  sound: localStorage.getItem("golden_sound") !== "off",
+  lastBonus: localStorage.getItem("golden_bonus") || null,
 
-const state = saved || {
-  balance: 12500,
-  xp: 0,
-  level: 1,
+  currentGame: "slots",
 
-  sound: true,
+  totalSpins:
+    Number(localStorage.getItem("golden_spins")) || 0,
 
-  lastBonus: null,
+  wins:
+    Number(localStorage.getItem("golden_wins")) || 0,
 
-  missionSpins: 0,
-  missionWins: 0,
-  missionGames: 0,
+  bestWin:
+    Number(localStorage.getItem("golden_best")) || 0,
 
-  gamesPlayed: 0,
-  totalWins: 0,
-
-  currentGame: "slots"
+  streak:
+    Number(localStorage.getItem("golden_streak")) || 0
 };
 
 
@@ -48,185 +45,66 @@ const state = saved || {
    HELPERS
    ========================================================= */
 
-const $ = id => document.getElementById(id);
+const $ = selector => document.querySelector(selector);
 
-const gameArea = $("gameArea");
-const toastEl = $("toast");
-const modal = $("modal");
+const gameArea =
+  $("#gameArea") ||
+  $("#game") ||
+  document.querySelector(".game-area");
 
-function money(value) {
+const balanceEl = $("#balance");
+
+const toastEl =
+  $("#toast") ||
+  document.querySelector(".toast");
+
+const modal =
+  $("#modal") ||
+  document.querySelector(".modal");
+
+
+function formatNumber(value) {
   return Math.floor(value).toLocaleString("ru-RU");
 }
 
+
 function save() {
   localStorage.setItem(
-    "golden_spin_state",
-    JSON.stringify(state)
+    "golden_balance",
+    state.balance
+  );
+
+  localStorage.setItem(
+    "golden_spins",
+    state.totalSpins
+  );
+
+  localStorage.setItem(
+    "golden_wins",
+    state.wins
+  );
+
+  localStorage.setItem(
+    "golden_best",
+    state.bestWin
+  );
+
+  localStorage.setItem(
+    "golden_streak",
+    state.streak
   );
 }
+
 
 function updateBalance() {
-  $("balance").textContent = money(state.balance);
-}
-
-function toast(text) {
-
-  toastEl.textContent = text;
-  toastEl.classList.add("show");
-
-  clearTimeout(toastEl.timer);
-
-  toastEl.timer = setTimeout(() => {
-    toastEl.classList.remove("show");
-  }, 2200);
-}
-
-
-/* =========================================================
-   AUDIO
-   ========================================================= */
-
-let audioContext = null;
-
-function audio() {
-
-  if (!state.sound) return null;
-
-  try {
-
-    if (!audioContext) {
-
-      const Audio =
-        window.AudioContext ||
-        window.webkitAudioContext;
-
-      if (!Audio) return null;
-
-      audioContext = new Audio();
-
-    }
-
-    if (audioContext.state === "suspended") {
-      audioContext.resume();
-    }
-
-    return audioContext;
-
-  } catch (_) {
-
-    return null;
-
+  if (balanceEl) {
+    balanceEl.textContent =
+      formatNumber(state.balance);
   }
 }
 
 
-function tone(
-  frequency,
-  duration = .12,
-  type = "sine",
-  volume = .05
-) {
-
-  const ctx = audio();
-
-  if (!ctx) return;
-
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.type = type;
-  osc.frequency.value = frequency;
-
-  gain.gain.setValueAtTime(
-    .0001,
-    ctx.currentTime
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
-    volume,
-    ctx.currentTime + .01
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
-    .0001,
-    ctx.currentTime + duration
-  );
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.start();
-
-  osc.stop(
-    ctx.currentTime + duration
-  );
-}
-
-
-function sound(name) {
-
-  if (!state.sound) return;
-
-  if (name === "click") {
-    tone(520,.1,"sine",.045);
-  }
-
-  if (name === "spin") {
-
-    tone(180,.35,"sawtooth",.025);
-
-    setTimeout(() => {
-      tone(260,.25,"sawtooth",.02);
-    },120);
-
-  }
-
-  if (name === "win") {
-
-    tone(620,.12,"triangle",.06);
-
-    setTimeout(() => {
-      tone(820,.15,"triangle",.06);
-    },100);
-
-    setTimeout(() => {
-      tone(1100,.25,"triangle",.07);
-    },210);
-
-  }
-
-  if (name === "bigwin") {
-
-    [520,660,820,1050,1350].forEach(
-      (frequency,index) => {
-
-        setTimeout(() => {
-          tone(
-            frequency,
-            .2,
-            "triangle",
-            .07
-          );
-        },index * 100);
-
-      }
-    );
-
-  }
-
-  if (name === "lose") {
-    tone(180,.25,"sawtooth",.035);
-  }
-
-}
-
-
-/* =========================================================
-   BALANCE / XP
-   ========================================================= */
-
-function addBalance(amount) {
-
+function changeBalance(amount) {
   state.balance += amount;
 
   if (state.balance < 0) {
@@ -238,63 +116,153 @@ function addBalance(amount) {
 }
 
 
-function addXP(amount) {
+function toast(message) {
+  if (!toastEl) return;
 
-  state.xp += amount;
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
 
-  let needed = state.level * 1000;
+  clearTimeout(toast.timer);
 
-  while (state.xp >= needed) {
-
-    state.xp -= needed;
-
-    state.level++;
-
-    toast(
-      `Новый уровень: ${state.level}!`
-    );
-
-    sound("bigwin");
-
-    needed = state.level * 1000;
-  }
-
-  updateProgress();
-  save();
+  toast.timer = setTimeout(() => {
+    toastEl.classList.remove("show");
+  }, 2300);
 }
 
 
-function updateProgress() {
+function random(min, max) {
+  return Math.floor(
+    Math.random() * (max - min + 1)
+  ) + min;
+}
 
-  const needed =
-    state.level * 1000;
 
-  $("levelText").textContent =
-    `LEVEL ${state.level}`;
+function chance(percent) {
+  return Math.random() < percent;
+}
 
-  $("heroLevel").textContent =
-    `LVL ${state.level}`;
 
-  $("xpCurrent").textContent =
-    state.xp;
+/* =========================================================
+   SOUND ENGINE
+   ========================================================= */
 
-  $("xpNeeded").textContent =
-    needed;
+let audioContext = null;
 
-  $("xpFill").style.width =
-    `${Math.min(
-      100,
-      state.xp / needed * 100
-    )}%`;
 
-  $("missionSpins").textContent =
-    Math.min(state.missionSpins,5);
+function getAudio() {
+  if (!state.sound) return null;
 
-  $("missionWins").textContent =
-    Math.min(state.missionWins,500);
+  try {
+    if (!audioContext) {
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
 
-  $("missionGames").textContent =
-    Math.min(state.missionGames,3);
+      if (!AudioContext) return null;
+
+      audioContext = new AudioContext();
+    }
+
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+
+    return audioContext;
+
+  } catch (_) {
+    return null;
+  }
+}
+
+
+function tone(
+  frequency,
+  duration = .12,
+  type = "sine",
+  volume = .055
+) {
+  const ctx = getAudio();
+
+  if (!ctx) return;
+
+  const oscillator =
+    ctx.createOscillator();
+
+  const gain =
+    ctx.createGain();
+
+  oscillator.type = type;
+
+  oscillator.frequency.setValueAtTime(
+    frequency,
+    ctx.currentTime
+  );
+
+  gain.gain.setValueAtTime(
+    .0001,
+    ctx.currentTime
+  );
+
+  gain.gain.exponentialRampToValueAtTime(
+    volume,
+    ctx.currentTime + .015
+  );
+
+  gain.gain.exponentialRampToValueAtTime(
+    .0001,
+    ctx.currentTime + duration
+  );
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.start();
+
+  oscillator.stop(
+    ctx.currentTime + duration + .02
+  );
+}
+
+
+function playSound(type) {
+
+  if (!state.sound) return;
+
+  switch (type) {
+
+    case "click":
+      tone(520, .08);
+      break;
+
+    case "tick":
+      tone(780, .045);
+      break;
+
+    case "spin":
+      tone(180, .35, "triangle", .045);
+      break;
+
+    case "win":
+      tone(660, .12);
+      setTimeout(() => tone(880, .14), 100);
+      break;
+
+    case "bigwin":
+      tone(523, .12);
+      setTimeout(() => tone(659, .12), 110);
+      setTimeout(() => tone(784, .18), 220);
+      setTimeout(() => tone(1047, .25), 350);
+      break;
+
+    case "lose":
+      tone(180, .18, "sawtooth", .035);
+      break;
+
+    case "coin":
+      tone(1000, .07);
+      setTimeout(() => tone(1400, .09), 70);
+      break;
+  }
 }
 
 
@@ -302,44 +270,121 @@ function updateProgress() {
    MODAL
    ========================================================= */
 
-function showModal(
+function openModal(
   title,
   value,
   text,
   big = false
 ) {
 
-  $("modalTitle").textContent = title;
-  $("modalValue").textContent = value;
-  $("modalText").textContent = text;
+  if (!modal) {
+    toast(`${title}: ${value}`);
+    return;
+  }
+
+  const titleEl =
+    $("#modalTitle") ||
+    modal.querySelector("[data-modal-title]");
+
+  const valueEl =
+    $("#modalValue") ||
+    modal.querySelector("[data-modal-value]");
+
+  const textEl =
+    $("#modalText") ||
+    modal.querySelector("[data-modal-text]");
+
+  if (titleEl) titleEl.textContent = title;
+  if (valueEl) valueEl.textContent = value;
+  if (textEl) textEl.textContent = text;
 
   modal.classList.add("open");
 
-  sound(
-    big ? "bigwin" : "win"
-  );
+  playSound(big ? "bigwin" : "win");
 }
 
 
 function closeModal() {
-  modal.classList.remove("open");
+  if (modal) {
+    modal.classList.remove("open");
+  }
 }
 
 
-$("modalButton").addEventListener(
+$("#modalClose")?.addEventListener(
   "click",
   closeModal
 );
 
-modal.addEventListener(
+$("#modalButton")?.addEventListener(
   "click",
-  e => {
+  closeModal
+);
 
-    if (e.target === modal) {
+modal?.addEventListener(
+  "click",
+  event => {
+    if (event.target === modal) {
       closeModal();
     }
-
   }
+);
+
+
+/* =========================================================
+   SOUND BUTTONS
+   ========================================================= */
+
+function updateSoundButtons() {
+
+  const soundButton =
+    $("#soundButton");
+
+  const soundFooter =
+    $("#soundFooter");
+
+  if (soundButton) {
+    soundButton.textContent =
+      state.sound ? "🔊" : "🔇";
+  }
+
+  if (soundFooter) {
+    soundFooter.textContent =
+      state.sound
+        ? "🔊 SOUND"
+        : "🔇 SOUND";
+  }
+}
+
+
+function toggleSound() {
+
+  state.sound = !state.sound;
+
+  localStorage.setItem(
+    "golden_sound",
+    state.sound ? "on" : "off"
+  );
+
+  updateSoundButtons();
+
+  if (state.sound) {
+    playSound("click");
+    toast("Звук включён");
+  } else {
+    toast("Звук выключен");
+  }
+}
+
+
+$("#soundButton")?.addEventListener(
+  "click",
+  toggleSound
+);
+
+$("#soundFooter")?.addEventListener(
+  "click",
+  toggleSound
 );
 
 
@@ -347,69 +392,35 @@ modal.addEventListener(
    PROFILE
    ========================================================= */
 
-$("profileButton").addEventListener(
+$("#profileButton")?.addEventListener(
   "click",
   () => {
 
-    sound("click");
+    playSound("click");
 
     const user =
       tg?.initDataUnsafe?.user;
 
     if (user) {
 
-      const name =
-        user.first_name || "Player";
+      const letter =
+        (user.first_name || "G")
+          .charAt(0)
+          .toUpperCase();
 
-      $("profileButton")
-        .textContent =
-        name[0].toUpperCase();
+      if ($("#profileLetter")) {
+        $("#profileLetter").textContent =
+          letter;
+      }
 
       toast(
-        `Привет, ${name}!`
+        `Привет, ${user.first_name || "игрок"}!`
       );
 
     } else {
 
-      toast(
-        `Golden Player • Level ${state.level}`
-      );
-
+      toast("GOLDEN PLAYER");
     }
-
-  }
-);
-
-
-/* =========================================================
-   SOUND
-   ========================================================= */
-
-function updateSound() {
-
-  $("soundButton").textContent =
-    state.sound
-      ? "🔊"
-      : "🔇";
-
-}
-
-$("soundButton").addEventListener(
-  "click",
-  () => {
-
-    state.sound = !state.sound;
-
-    save();
-    updateSound();
-
-    if (state.sound) {
-      sound("click");
-      toast("Звук включён");
-    } else {
-      toast("Звук выключен");
-    }
-
   }
 );
 
@@ -418,18 +429,18 @@ $("soundButton").addEventListener(
    VIP
    ========================================================= */
 
-$("vipButton").addEventListener(
+$("#vipButton")?.addEventListener(
   "click",
   () => {
 
-    sound("click");
+    playSound("click");
 
-    showModal(
+    openModal(
       "VIP CLUB",
-      "VIP",
-      "VIP-прогресс и дополнительные награды можно подключить к аккаунту позже."
+      "GOLD",
+      "VIP-клуб Golden Spin. Эксклюзивные режимы и бонусы.",
+      false
     );
-
   }
 );
 
@@ -438,12 +449,14 @@ $("vipButton").addEventListener(
    DAILY BONUS
    ========================================================= */
 
-$("dailyBonus").addEventListener(
+$("#dailyBonus")?.addEventListener(
   "click",
   () => {
 
     const today =
-      new Date().toISOString().slice(0,10);
+      new Date()
+        .toISOString()
+        .slice(0, 10);
 
     if (state.lastBonus === today) {
 
@@ -456,17 +469,44 @@ $("dailyBonus").addEventListener(
 
     state.lastBonus = today;
 
-    addBalance(250);
-    addXP(100);
-
-    save();
-
-    showModal(
-      "DAILY REWARD",
-      "+250",
-      "Ежедневный бонус добавлен на баланс."
+    localStorage.setItem(
+      "golden_bonus",
+      today
     );
 
+    changeBalance(250);
+
+    playSound("coin");
+
+    openModal(
+      "DAILY REWARD",
+      "+250",
+      "Ежедневная награда добавлена на баланс."
+    );
+  }
+);
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+$("#heroPlay")?.addEventListener(
+  "click",
+  () => {
+
+    playSound("click");
+
+    openGame("slots");
+
+    setTimeout(() => {
+
+      gameArea?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+    }, 100);
   }
 );
 
@@ -483,185 +523,265 @@ document
       "click",
       () => {
 
-        sound("click");
+        const game =
+          card.dataset.game;
+
+        if (!game) return;
+
+        playSound("click");
 
         document
           .querySelectorAll(".game-card")
-          .forEach(
-            c => c.classList.remove("active")
-          );
+          .forEach(item => {
+            item.classList.remove(
+              "selected",
+              "active"
+            );
+          });
 
-        card.classList.add("active");
-
-        openGame(
-          card.dataset.game
+        card.classList.add(
+          "selected",
+          "active"
         );
 
+        openGame(game);
       }
     );
-
   });
 
 
-$("heroPlay").addEventListener(
-  "click",
-  () => {
-
-    sound("click");
-
-    document
-      .querySelector("#games")
-      .scrollIntoView({
-        behavior:"smooth"
-      });
-
-    setTimeout(
-      () => openGame("slots"),
-      450
-    );
-
-  }
-);
-
-
-function registerGame() {
-
-  state.gamesPlayed++;
-  state.missionGames++;
-
-  if (state.missionGames === 3) {
-
-    addBalance(100);
-
-    toast(
-      "Задание выполнено: +100"
-    );
-
-  }
-
-  save();
-  updateProgress();
-}
-
-
-/* =========================================================
-   OPEN GAME
-   ========================================================= */
-
 function openGame(game) {
+
+  if (!gameArea) {
+    console.error(
+      "Golden Spin: gameArea not found"
+    );
+
+    return;
+  }
 
   state.currentGame = game;
 
-  const renderers = {
-
+  const games = {
     slots: renderSlots,
     roulette: renderRoulette,
     wheel: renderWheel,
     chests: renderChests,
     smash: renderSmash
-
   };
 
-  if (renderers[game]) {
+  if (!games[game]) return;
 
-    renderers[game]();
+  games[game]();
 
-    setTimeout(() => {
+  setTimeout(() => {
 
-      gameArea.scrollIntoView({
-        behavior:"smooth",
-        block:"center"
-      });
+    gameArea.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
 
-    },50);
-
-  }
-
+  }, 80);
 }
 
 
 /* =========================================================
-   SLOTS
+   COMMON GAME UI
+   ========================================================= */
+
+function gameHeader(
+  label,
+  title,
+  subtitle
+) {
+
+  return `
+    <div class="game-screen">
+
+      <div class="game-screen-head">
+
+        <div>
+          <span class="mini-label">
+            ${label}
+          </span>
+
+          <h2>${title}</h2>
+
+          <p>
+            ${subtitle}
+          </p>
+        </div>
+
+        <div class="game-streak">
+          <small>STREAK</small>
+          <strong>${state.streak}</strong>
+        </div>
+
+      </div>
+
+  `;
+}
+
+
+function finishGame() {
+
+  setTimeout(() => {
+
+    gameArea
+      ?.querySelectorAll(
+        "button"
+      )
+      .forEach(button => {
+        button.disabled = false;
+      });
+
+  }, 100);
+}
+
+
+function registerSpin() {
+
+  state.totalSpins++;
+
+  save();
+}
+
+
+function registerWin(amount) {
+
+  if (amount <= 0) {
+
+    state.streak = 0;
+
+    save();
+
+    return;
+  }
+
+  state.wins++;
+
+  state.streak++;
+
+  if (amount > state.bestWin) {
+    state.bestWin = amount;
+  }
+
+  save();
+}
+
+
+/* =========================================================
+   1. SLOTS
    ========================================================= */
 
 function renderSlots() {
 
   gameArea.innerHTML = `
+    ${gameHeader(
+      "GOLDEN JACKPOT",
+      "🎰 GOLDEN SLOTS",
+      "Собери комбинацию и попробуй поймать JACKPOT."
+    )}
 
-    <div class="game-screen">
+      <div class="slot-machine">
 
-      <div class="game-head">
-
-        <div>
-          <span class="mini-label">
-            GOLDEN JACKPOT
-          </span>
-
-          <h2>🎰 СЛОТЫ</h2>
+        <div class="slot-jackpot">
+          JACKPOT
+          <strong id="slotJackpot">
+            ${formatNumber(
+              50000 +
+              state.totalSpins * 17
+            )}
+          </strong>
         </div>
 
-        <div class="game-status">
-          777 = JACKPOT
+        <div class="slot-reels">
+
+          <div class="slot-reel" id="reel1">
+            7
+          </div>
+
+          <div class="slot-reel" id="reel2">
+            ◆
+          </div>
+
+          <div class="slot-reel" id="reel3">
+            7
+          </div>
+
         </div>
 
-      </div>
+        <div class="slot-result" id="slotResult">
+          УДАЧИ
+        </div>
 
-      <div class="game-board">
+        <div class="slot-controls">
 
-        <div class="slot-machine">
+          <div class="bet-box">
 
-          <div class="slot-reels">
+            <span>СТАВКА</span>
 
-            <div class="slot-reel">7</div>
-            <div class="slot-reel">◆</div>
-            <div class="slot-reel">7</div>
+            <strong id="slotBet">
+              50
+            </strong>
 
           </div>
 
-          <div class="slot-message"
-               id="slotMessage">
-            Выбери ставку и крути
-          </div>
+          <div class="bet-buttons">
 
-          <div class="bet-panel">
+            <button data-slot-bet="10">
+              10
+            </button>
 
-            <span class="bet-label">
-              СТАВКА
-            </span>
+            <button data-slot-bet="50">
+              50
+            </button>
 
-            <div class="bet-buttons">
+            <button data-slot-bet="100">
+              100
+            </button>
 
-              <button
-                class="active"
-                data-slot-bet="25">
-                25
-              </button>
+            <button data-slot-bet="250">
+              250
+            </button>
 
-              <button
-                data-slot-bet="50">
-                50
-              </button>
-
-              <button
-                data-slot-bet="100">
-                100
-              </button>
-
-              <button
-                data-slot-bet="250">
-                250
-              </button>
-
-            </div>
+            <button data-slot-bet="500">
+              500
+            </button>
 
           </div>
 
           <button
             class="game-action"
-            id="slotSpin">
+            id="slotSpin"
+          >
             SPIN
           </button>
 
+        </div>
+
+      </div>
+
+      <div class="paytable">
+
+        <div>
+          <span>777</span>
+          <strong>×100</strong>
+        </div>
+
+        <div>
+          <span>GOLD</span>
+          <strong>×25</strong>
+        </div>
+
+        <div>
+          <span>BAR</span>
+          <strong>×10</strong>
+        </div>
+
+        <div>
+          <span>◆◆◆</span>
+          <strong>×5</strong>
         </div>
 
       </div>
@@ -670,17 +790,12 @@ function renderSlots() {
   `;
 
 
-  let bet = 25;
-  let spinning = false;
+  let bet = 50;
 
-  const reels =
-    document.querySelectorAll(
-      ".slot-reel"
-    );
-
-
-  document
-    .querySelectorAll("[data-slot-bet]")
+  gameArea
+    .querySelectorAll(
+      "[data-slot-bet]"
+    )
     .forEach(button => {
 
       button.addEventListener(
@@ -692,330 +807,320 @@ function renderSlots() {
               button.dataset.slotBet
             );
 
-          document
-            .querySelectorAll(
-              "[data-slot-bet]"
-            )
-            .forEach(
-              b => b.classList.remove("active")
-            );
+          $("#slotBet").textContent =
+            bet;
 
-          button.classList.add("active");
-
-          sound("click");
-
+          playSound("click");
         }
       );
-
     });
 
 
-  $("slotSpin").addEventListener(
-    "click",
-    () => {
+  $("#slotSpin")
+    ?.addEventListener(
+      "click",
+      () => {
 
-      if (spinning) return;
+        const spinButton =
+          $("#slotSpin");
 
-      if (state.balance < bet) {
+        if (
+          state.balance < bet
+        ) {
 
-        toast(
-          "Недостаточно токенов"
-        );
-
-        sound("lose");
-
-        return;
-      }
-
-      spinning = true;
-
-      addBalance(-bet);
-
-      state.missionSpins++;
-
-      if (state.missionSpins === 5) {
-
-        addBalance(100);
-
-        toast(
-          "Задание «5 спинов» выполнено!"
-        );
-
-      }
-
-      addXP(20);
-
-      save();
-      updateProgress();
-
-      sound("spin");
-
-      reels.forEach(
-        reel => reel.classList.add("spin")
-      );
-
-      $("slotMessage")
-        .textContent =
-        "Барабаны вращаются...";
-
-
-      const symbols = [
-        "7",
-        "◆",
-        "BAR",
-        "GOLD",
-        "★"
-      ];
-
-      const results = [];
-
-      reels.forEach(
-        (reel,index) => {
-
-          setTimeout(
-            () => {
-
-              reel.classList.remove("spin");
-
-              const result =
-                symbols[
-                  Math.floor(
-                    Math.random() *
-                    symbols.length
-                  )
-                ];
-
-              reel.textContent =
-                result;
-
-              results.push(result);
-
-            },
-            800 + index * 500
+          toast(
+            "Недостаточно токенов"
           );
 
+          return;
         }
-      );
 
+        spinButton.disabled = true;
 
-      setTimeout(
-        () => {
+        changeBalance(-bet);
 
-          spinning = false;
+        registerSpin();
 
-          const [a,b,c] =
-            reels;
+        playSound("spin");
 
-          const values =
-            [
-              a.textContent,
-              b.textContent,
-              c.textContent
-            ];
+        const reels = [
+          $("#reel1"),
+          $("#reel2"),
+          $("#reel3")
+        ];
 
+        const symbols = [
+          "7",
+          "◆",
+          "BAR",
+          "GOLD",
+          "777"
+        ];
 
-          let reward = 0;
+        reels.forEach(
+          (reel, index) => {
 
-
-          if (
-            values[0] === "7" &&
-            values[1] === "7" &&
-            values[2] === "7"
-          ) {
-
-            reward = bet * 30;
-
-          }
-
-          else if (
-            values.every(
-              x => x === values[0]
-            )
-          ) {
-
-            reward = bet * 12;
-
-          }
-
-          else if (
-            values.filter(
-              x => x === "7"
-            ).length >= 2
-          ) {
-
-            reward = bet * 5;
-
-          }
-
-          else if (
-            values.filter(
-              x => x === "◆"
-            ).length >= 2
-          ) {
-
-            reward = bet * 3;
-
-          }
-
-
-          if (reward > 0) {
-
-            addBalance(reward);
-
-            state.totalWins += reward;
-
-            state.missionWins =
-              Math.min(
-                500,
-                state.missionWins + reward
-              );
-
-            addXP(
-              reward >= bet * 10
-                ? 150
-                : 60
+            reel.classList.add(
+              "spinning"
             );
 
-            save();
-            updateProgress();
+            let ticks = 0;
 
-            $("slotMessage")
-              .textContent =
-              `WIN +${money(reward)}`;
+            const timer =
+              setInterval(() => {
 
-            showModal(
-              reward >= bet * 20
+                reel.textContent =
+                  symbols[
+                    random(
+                      0,
+                      symbols.length - 1
+                    )
+                  ];
+
+                playSound("tick");
+
+                ticks++;
+
+                if (ticks >= 10 + index * 5) {
+
+                  clearInterval(timer);
+
+                  reel.classList.remove(
+                    "spinning"
+                  );
+
+                }
+
+              }, 75);
+
+          }
+        );
+
+
+        setTimeout(() => {
+
+          const roll =
+            Math.random();
+
+          let result;
+          let multiplier = 0;
+
+          if (roll < .012) {
+
+            result =
+              ["777", "777", "777"];
+
+            multiplier = 100;
+
+          } else if (roll < .045) {
+
+            result =
+              ["GOLD", "GOLD", "GOLD"];
+
+            multiplier = 25;
+
+          } else if (roll < .11) {
+
+            result =
+              ["BAR", "BAR", "BAR"];
+
+            multiplier = 10;
+
+          } else if (roll < .25) {
+
+            result =
+              ["◆", "◆", "◆"];
+
+            multiplier = 5;
+
+          } else if (roll < .38) {
+
+            const symbol =
+              symbols[
+                random(
+                  0,
+                  symbols.length - 1
+                )
+              ];
+
+            result =
+              [symbol, symbol, symbol];
+
+            multiplier = 2;
+
+          } else {
+
+            result = [
+              symbols[
+                random(0, 4)
+              ],
+              symbols[
+                random(0, 4)
+              ],
+              symbols[
+                random(0, 4)
+              ]
+            ];
+
+          }
+
+
+          reels.forEach(
+            (reel, index) => {
+
+              reel.textContent =
+                result[index];
+
+            }
+          );
+
+
+          const resultEl =
+            $("#slotResult");
+
+
+          if (multiplier > 0) {
+
+            const reward =
+              bet * multiplier;
+
+            changeBalance(reward);
+
+            registerWin(reward);
+
+            resultEl.textContent =
+              `WIN ×${multiplier}`;
+
+            resultEl.classList.add(
+              "win"
+            );
+
+            playSound(
+              multiplier >= 25
+                ? "bigwin"
+                : "win"
+            );
+
+            openModal(
+              multiplier >= 25
                 ? "JACKPOT!"
-                : "ВЫИГРЫШ!",
-              `+${money(reward)}`,
-              "Комбинация принесла награду.",
-              reward >= bet * 20
+                : "WINNER!",
+              `+${formatNumber(
+                reward
+              )}`,
+              `Комбинация ${result.join(
+                " • "
+              )} принесла ×${multiplier}.`,
+              multiplier >= 25
             );
 
           } else {
 
-            $("slotMessage")
-              .textContent =
-              "В этот раз мимо. Крути ещё!";
+            registerWin(0);
 
-            sound("lose");
+            resultEl.textContent =
+              "TRY AGAIN";
 
+            resultEl.classList.remove(
+              "win"
+            );
+
+            playSound("lose");
+
+            toast(
+              "Комбинация не собрана"
+            );
           }
 
-          registerGame();
+          spinButton.disabled = false;
 
-        },
-        2400
-      );
+        }, 1450);
 
-    }
-  );
-
+      }
+    );
 }
 
 
 /* =========================================================
-   ROULETTE
+   2. ROULETTE
    ========================================================= */
 
 function renderRoulette() {
 
   gameArea.innerHTML = `
+    ${gameHeader(
+      "EURO ROULETTE",
+      "🎡 ROULETTE",
+      "Выбери цвет и попробуй угадать результат."
+    )}
 
-    <div class="game-screen">
+      <div class="roulette-game">
 
-      <div class="game-head">
-
-        <div>
-          <span class="mini-label">
-            EURO ROULETTE
-          </span>
-
-          <h2>🎲 РУЛЕТКА</h2>
-        </div>
-
-        <div class="game-status">
-          0 = ×35
-        </div>
-
-      </div>
-
-      <div class="roulette-layout">
-
-        <div>
+        <div class="roulette-table">
 
           <div
             class="roulette-wheel"
-            id="rouletteWheel">
+            id="rouletteWheel"
+          >
 
-            <div class="roulette-pointer">
-              ▼
+            <div class="roulette-number">
+              0
             </div>
 
           </div>
 
+          <div class="roulette-pointer">
+            ▼
+          </div>
+
         </div>
 
-        <div>
+        <div class="roulette-controls">
 
-          <div class="roulette-options">
+          <div class="roulette-bet">
+            <span>BET</span>
+            <strong>50</strong>
+          </div>
+
+          <div class="color-bets">
 
             <button
-              class="roulette-option active"
-              data-roulette="red">
-              🔴 КРАСНОЕ
+              data-color="red"
+              class="active"
+            >
+              🔴 RED
             </button>
 
-            <button
-              class="roulette-option"
-              data-roulette="black">
-              ⚫ ЧЁРНОЕ
+            <button data-color="black">
+              ⚫ BLACK
             </button>
 
-            <button
-              class="roulette-option"
-              data-roulette="green">
+            <button data-color="green">
               🟢 ZERO
             </button>
 
           </div>
 
-          <div class="bet-panel">
-
-            <span class="bet-label">
-              СТАВКА
-            </span>
-
-            <div class="bet-buttons">
-
-              <button
-                class="active"
-                data-roulette-bet="25">
-                25
-              </button>
-
-              <button
-                data-roulette-bet="50">
-                50
-              </button>
-
-              <button
-                data-roulette-bet="100">
-                100
-              </button>
-
-            </div>
-
-          </div>
-
           <button
             class="game-action"
-            id="rouletteSpin">
-            КРУТИТЬ РУЛЕТКУ
+            id="rouletteSpin"
+          >
+            SPIN ROULETTE
           </button>
 
         </div>
 
+      </div>
+
+      <div class="roulette-history">
+        <span>HISTORY</span>
+        <div id="rouletteHistory">
+          <i>0</i>
+          <i class="red">7</i>
+          <i>18</i>
+          <i class="red">32</i>
+          <i>9</i>
+        </div>
       </div>
 
     </div>
@@ -1023,42 +1128,11 @@ function renderRoulette() {
 
 
   let selected = "red";
-  let bet = 25;
-  let spinning = false;
 
 
-  document
-    .querySelectorAll("[data-roulette]")
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          selected =
-            button.dataset.roulette;
-
-          document
-            .querySelectorAll(
-              "[data-roulette]"
-            )
-            .forEach(
-              b => b.classList.remove("active")
-            );
-
-          button.classList.add("active");
-
-          sound("click");
-
-        }
-      );
-
-    });
-
-
-  document
+  gameArea
     .querySelectorAll(
-      "[data-roulette-bet]"
+      "[data-color]"
     )
     .forEach(button => {
 
@@ -1066,180 +1140,206 @@ function renderRoulette() {
         "click",
         () => {
 
-          bet =
-            Number(
-              button.dataset.rouletteBet
-            );
+          selected =
+            button.dataset.color;
 
-          document
+          gameArea
             .querySelectorAll(
-              "[data-roulette-bet]"
+              "[data-color]"
             )
             .forEach(
-              b => b.classList.remove("active")
+              item =>
+                item.classList.remove(
+                  "active"
+                )
             );
 
-          button.classList.add("active");
+          button.classList.add(
+            "active"
+          );
 
-          sound("click");
-
+          playSound("click");
         }
       );
-
     });
 
 
-  $("rouletteSpin").addEventListener(
-    "click",
-    () => {
+  $("#rouletteSpin")
+    ?.addEventListener(
+      "click",
+      () => {
 
-      if (spinning) return;
+        const bet = 50;
 
-      if (state.balance < bet) {
+        if (
+          state.balance < bet
+        ) {
 
-        toast(
-          "Недостаточно токенов"
+          toast(
+            "Недостаточно токенов"
+          );
+
+          return;
+        }
+
+        const button =
+          $("#rouletteSpin");
+
+        button.disabled = true;
+
+        changeBalance(-bet);
+
+        registerSpin();
+
+        const wheel =
+          $("#rouletteWheel");
+
+        playSound("spin");
+
+        wheel.classList.add(
+          "spinning"
         );
 
-        return;
-      }
 
-      spinning = true;
+        setTimeout(() => {
 
-      addBalance(-bet);
-      addXP(20);
-
-      sound("spin");
-
-      const wheel =
-        $("rouletteWheel");
-
-      const resultRoll =
-        Math.random();
-
-      let result;
-
-      if (resultRoll < .46) {
-        result = "red";
-      } else if (resultRoll < .92) {
-        result = "black";
-      } else {
-        result = "green";
-      }
+          wheel.classList.remove(
+            "spinning"
+          );
 
 
-      const rotation =
-        1440 +
-        Math.floor(
-          Math.random() * 720
-        );
+          const roll =
+            Math.random();
 
-      wheel.style.transform =
-        `rotate(${rotation}deg)`;
+          let result;
 
+          if (roll < .47) {
 
-      setTimeout(
-        () => {
+            result = "red";
 
-          spinning = false;
+          } else if (
+            roll < .94
+          ) {
 
-          let reward = 0;
+            result = "black";
 
-          if (result === selected) {
+          } else {
 
-            reward =
-              result === "green"
-                ? bet * 35
-                : bet * 2;
-
+            result = "green";
           }
 
 
-          if (reward > 0) {
+          const number =
+            result === "green"
+              ? 0
+              : random(1, 36);
 
-            addBalance(reward);
 
-            state.totalWins += reward;
+          const history =
+            $("#rouletteHistory");
 
-            state.missionWins =
-              Math.min(
-                500,
-                state.missionWins + reward
+
+          if (history) {
+
+            const item =
+              document.createElement(
+                "i"
               );
 
-            addXP(
-              result === "green"
-                ? 200
-                : 60
-            );
+            item.textContent =
+              number;
 
-            showModal(
+            if (result === "red") {
+              item.classList.add(
+                "red"
+              );
+            }
+
+            history.prepend(item);
+
+            while (
+              history.children.length > 8
+            ) {
+              history.lastElementChild.remove();
+            }
+          }
+
+
+          const win =
+            result === selected;
+
+
+          if (win) {
+
+            const multiplier =
               result === "green"
-                ? "ZERO!"
-                : "РУЛЕТКА",
-              `+${money(reward)}`,
-              `Выпало: ${result === "red" ? "КРАСНОЕ" : result === "black" ? "ЧЁРНОЕ" : "ZERO"}.`
+                ? 35
+                : 2;
+
+            const reward =
+              bet * multiplier;
+
+            changeBalance(reward);
+
+            registerWin(reward);
+
+            openModal(
+              "ROULETTE WIN",
+              `+${formatNumber(
+                reward
+              )}`,
+              `Выпало ${number}. ${result.toUpperCase()} выиграл.`,
+              result === "green"
             );
 
           } else {
 
+            registerWin(0);
+
+            playSound("lose");
+
             toast(
-              `Выпало: ${
-                result === "red"
-                  ? "КРАСНОЕ"
-                  : result === "black"
-                    ? "ЧЁРНОЕ"
-                    : "ZERO"
-              }`
+              `Выпало ${number}. Попробуй ещё раз.`
             );
-
-            sound("lose");
-
           }
 
-          save();
-          updateProgress();
-          registerGame();
 
-        },
-        2800
-      );
+          button.disabled = false;
 
-    }
-  );
-
+        }, 2100);
+      }
+    );
 }
 
 
 /* =========================================================
-   FORTUNE WHEEL
+   3. FORTUNE WHEEL
    ========================================================= */
 
 function renderWheel() {
 
+  const rewards = [
+    0,
+    50,
+    100,
+    150,
+    250,
+    500,
+    1000,
+    2500
+  ];
+
+
   gameArea.innerHTML = `
+    ${gameHeader(
+      "FORTUNE WHEEL",
+      "🎡 WHEEL OF FORTUNE",
+      "Крути колесо и попробуй поймать крупный сектор."
+    )}
 
-    <div class="game-screen">
+      <div class="fortune-game">
 
-      <div class="game-head">
-
-        <div>
-          <span class="mini-label">
-            FORTUNE WHEEL
-          </span>
-
-          <h2>🎡 КОЛЕСО УДАЧИ</h2>
-        </div>
-
-        <div class="game-status">
-          LUCK
-        </div>
-
-      </div>
-
-      <div class="fortune-wrap">
-
-        <div style="position:relative">
+        <div class="fortune-wheel-wrap">
 
           <div class="fortune-pointer">
             ▼
@@ -1247,49 +1347,24 @@ function renderWheel() {
 
           <div
             class="fortune-wheel"
-            id="fortuneWheel">
+            id="fortuneWheel"
+          >
 
-            <span>◆</span>
+            ${rewards.map(
+              (reward, i) => `
+                <div class="fortune-sector sector-${i}">
+                  <span>
+                    ${reward === 0
+                      ? "LOSE"
+                      : "+" + reward}
+                  </span>
+                </div>
+              `
+            ).join("")}
 
-          </div>
-
-        </div>
-
-        <div class="wheel-rewards">
-          <span>0×</span>
-          <span>1×</span>
-          <span>2×</span>
-          <span>3×</span>
-          <span>5×</span>
-          <span>8×</span>
-          <span>10×</span>
-          <span>20×</span>
-        </div>
-
-        <div class="bet-panel"
-             style="justify-content:center">
-
-          <span class="bet-label">
-            СТАВКА
-          </span>
-
-          <div class="bet-buttons">
-
-            <button
-              class="active"
-              data-wheel-bet="25">
-              25
-            </button>
-
-            <button
-              data-wheel-bet="50">
-              50
-            </button>
-
-            <button
-              data-wheel-bet="100">
-              100
-            </button>
+            <div class="fortune-center">
+              ◆
+            </div>
 
           </div>
 
@@ -1297,8 +1372,9 @@ function renderWheel() {
 
         <button
           class="game-action"
-          id="wheelSpin">
-          SPIN WHEEL
+          id="fortuneSpin"
+        >
+          SPIN — 50
         </button>
 
       </div>
@@ -1307,417 +1383,319 @@ function renderWheel() {
   `;
 
 
-  let bet = 25;
-  let spinning = false;
+  $("#fortuneSpin")
+    ?.addEventListener(
+      "click",
+      () => {
 
+        const bet = 50;
 
-  document
-    .querySelectorAll("[data-wheel-bet]")
-    .forEach(button => {
+        if (
+          state.balance < bet
+        ) {
 
-      button.addEventListener(
-        "click",
-        () => {
+          toast(
+            "Недостаточно токенов"
+          );
 
-          bet =
-            Number(
-              button.dataset.wheelBet
-            );
-
-          document
-            .querySelectorAll(
-              "[data-wheel-bet]"
-            )
-            .forEach(
-              b => b.classList.remove("active")
-            );
-
-          button.classList.add("active");
-
-          sound("click");
-
+          return;
         }
-      );
 
-    });
+        const button =
+          $("#fortuneSpin");
 
+        button.disabled = true;
 
-  $("wheelSpin").addEventListener(
-    "click",
-    () => {
+        changeBalance(-bet);
 
-      if (spinning) return;
+        registerSpin();
 
-      if (state.balance < bet) {
+        const wheel =
+          $("#fortuneWheel");
 
-        toast(
-          "Недостаточно токенов"
-        );
+        const sector =
+          random(
+            0,
+            rewards.length - 1
+          );
 
-        return;
-      }
-
-      spinning = true;
-
-      addBalance(-bet);
-      addXP(20);
-
-      sound("spin");
+        const rotation =
+          360 * 6 +
+          sector *
+            (360 / rewards.length) +
+          random(-8, 8);
 
 
-      const multipliers =
-        [0,1,2,3,5,8,10,20];
+        playSound("spin");
 
-      const index =
-        Math.floor(
-          Math.random() *
-          multipliers.length
-        );
-
-      const multiplier =
-        multipliers[index];
-
-      const wheel =
-        $("fortuneWheel");
+        wheel.style.transform =
+          `rotate(${rotation}deg)`;
 
 
-      const rotation =
-        1440 +
-        index * 45 +
-        Math.floor(
-          Math.random() * 30
-        );
-
-
-      wheel.style.transform =
-        `rotate(${rotation}deg)`;
-
-
-      setTimeout(
-        () => {
-
-          spinning = false;
+        setTimeout(() => {
 
           const reward =
-            bet * multiplier;
+            rewards[sector];
 
 
           if (reward > 0) {
 
-            addBalance(reward);
+            changeBalance(reward);
 
-            state.totalWins += reward;
+            registerWin(reward);
 
-            state.missionWins =
-              Math.min(
-                500,
-                state.missionWins + reward
-              );
-
-            addXP(
-              multiplier >= 10
-                ? 150
-                : 50
-            );
-
-            showModal(
-              multiplier >= 10
-                ? "BIG WIN!"
-                : "КОЛЕСО УДАЧИ",
-              `+${money(reward)}`,
-              `${multiplier}× ставки.`,
-              multiplier >= 10
+            openModal(
+              reward >= 1000
+                ? "MEGA WIN!"
+                : "FORTUNE WIN",
+              `+${formatNumber(
+                reward
+              )}`,
+              "Колесо остановилось на выигрышном секторе.",
+              reward >= 1000
             );
 
           } else {
 
+            registerWin(0);
+
+            playSound("lose");
+
             toast(
-              "Пустой сектор!"
+              "Колесо остановилось на LOSE"
             );
-
-            sound("lose");
-
           }
 
-          save();
-          updateProgress();
-          registerGame();
 
-        },
-        3000
-      );
+          button.disabled = false;
 
-    }
-  );
-
+        }, 4200);
+      }
+    );
 }
 
 
 /* =========================================================
-   CHESTS
+   4. GOLD CHESTS
    ========================================================= */
 
 function renderChests() {
 
   gameArea.innerHTML = `
+    ${gameHeader(
+      "TREASURE ROOM",
+      "💰 GOLD CHESTS",
+      "Только один сундук может скрывать главный приз."
+    )}
 
-    <div class="game-screen">
+      <div class="chest-game">
 
-      <div class="game-head">
-
-        <div>
-          <span class="mini-label">
-            TREASURE ROOM
-          </span>
-
-          <h2>🧰 GOLD CHESTS</h2>
+        <div class="chest-pot">
+          <span>CHEST POT</span>
+          <strong>
+            2 500
+          </strong>
         </div>
 
-        <div class="game-status">
-          FIND THE GOLD
+        <div class="chest-row">
+
+          <button
+            class="open-chest"
+            data-chest="0"
+          >
+            <span>◆</span>
+            <small>CHEST I</small>
+          </button>
+
+          <button
+            class="open-chest"
+            data-chest="1"
+          >
+            <span>◆</span>
+            <small>CHEST II</small>
+          </button>
+
+          <button
+            class="open-chest"
+            data-chest="2"
+          >
+            <span>◆</span>
+            <small>CHEST III</small>
+          </button>
+
         </div>
 
-      </div>
-
-      <div class="chest-grid">
-
-        <button
-          class="chest"
-          data-chest="0">
-
-          <div class="chest-icon">
-            🧰
-          </div>
-
-          <span>
-            CHEST I
-          </span>
-
-        </button>
-
-        <button
-          class="chest"
-          data-chest="1">
-
-          <div class="chest-icon">
-            🧰
-          </div>
-
-          <span>
-            CHEST II
-          </span>
-
-        </button>
-
-        <button
-          class="chest"
-          data-chest="2">
-
-          <div class="chest-icon">
-            🧰
-          </div>
-
-          <span>
-            CHEST III
-          </span>
-
-        </button>
+        <p class="game-note">
+          Стоимость открытия: <strong>50</strong>
+        </p>
 
       </div>
-
-      <p style="
-        text-align:center;
-        color:#817362;
-        font-size:11px;
-      ">
-        Каждый сундук стоит 50 токенов
-      </p>
 
     </div>
   `;
 
 
-  let opened = false;
+  const buttons =
+    gameArea.querySelectorAll(
+      ".open-chest"
+    );
 
 
-  document
-    .querySelectorAll(".chest")
-    .forEach(chest => {
+  buttons.forEach(button => {
 
-      chest.addEventListener(
-        "click",
-        () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-          if (opened) return;
+        const cost = 50;
 
-          const cost = 50;
+        if (
+          state.balance < cost
+        ) {
 
-          if (state.balance < cost) {
+          toast(
+            "Недостаточно токенов"
+          );
 
-            toast(
-              "Недостаточно токенов"
-            );
+          return;
+        }
 
-            return;
+        buttons.forEach(
+          b => b.disabled = true
+        );
+
+        changeBalance(-cost);
+
+        registerSpin();
+
+        playSound("click");
+
+        button.classList.add(
+          "opening"
+        );
+
+
+        setTimeout(() => {
+
+          const roll =
+            Math.random();
+
+          let reward;
+
+          if (roll < .02) {
+
+            reward = 2500;
+
+          } else if (roll < .08) {
+
+            reward = 750;
+
+          } else if (roll < .22) {
+
+            reward = 300;
+
+          } else if (roll < .55) {
+
+            reward = 150;
+
+          } else if (roll < .82) {
+
+            reward = 75;
+
+          } else {
+
+            reward = 25;
           }
 
-          opened = true;
 
-          addBalance(-cost);
-          addXP(15);
+          changeBalance(reward);
 
-          sound("click");
+          registerWin(reward);
 
-          chest.classList.add(
+
+          button.classList.add(
             "opened"
           );
 
 
-          setTimeout(
-            () => {
-
-              const roll =
-                Math.random();
-
-              let reward;
-
-              if (roll < .05) {
-                reward = 1000;
-              } else if (roll < .15) {
-                reward = 500;
-              } else if (roll < .35) {
-                reward = 250;
-              } else if (roll < .65) {
-                reward = 100;
-              } else {
-                reward = 25;
-              }
-
-
-              if (reward > 0) {
-
-                addBalance(reward);
-
-                state.totalWins += reward;
-
-                state.missionWins =
-                  Math.min(
-                    500,
-                    state.missionWins + reward
-                  );
-
-                addXP(
-                  reward >= 500
-                    ? 120
-                    : 35
-                );
-
-                showModal(
-                  reward >= 500
-                    ? "RARE TREASURE!"
-                    : "СУНДУК ОТКРЫТ!",
-                  `+${money(reward)}`,
-                  "Ты нашёл виртуальную награду.",
-                  reward >= 500
-                );
-
-              }
-
-              save();
-              updateProgress();
-              registerGame();
-
-              setTimeout(
-                () => {
-                  opened = false;
-                },
-                500
-              );
-
-            },
-            700
+          openModal(
+            reward >= 750
+              ? "TREASURE!"
+              : "CHEST OPENED",
+            `+${formatNumber(
+              reward
+            )}`,
+            "В сундуке обнаружена виртуальная награда.",
+            reward >= 750
           );
 
-        }
-      );
 
-    });
+          buttons.forEach(
+            b => b.disabled = false
+          );
 
+        }, 900);
+      }
+    );
+  });
 }
 
 
 /* =========================================================
-   SMASH
+   5. GOLD SMASH
    ========================================================= */
 
 function renderSmash() {
 
   gameArea.innerHTML = `
+    ${gameHeader(
+      "BREAK & WIN",
+      "🔨 GOLD SMASH",
+      "Разбей блок. Иногда внутри находится большой приз."
+    )}
 
-    <div class="game-screen">
+      <div class="smash-game">
 
-      <div class="game-head">
+        <div class="smash-meter">
 
-        <div>
-          <span class="mini-label">
-            BREAK & WIN
+          <span>
+            JACKPOT CHANCE
           </span>
 
-          <h2>🔨 GOLD SMASH</h2>
+          <div>
+            <i style="width: 32%"></i>
+          </div>
+
+          <small>
+            32%
+          </small>
+
         </div>
 
-        <div class="game-status">
-          25 TOKENS
+        <button
+          class="smash-block"
+          id="smashBlock"
+        >
+
+          <span class="smash-question">
+            ?
+          </span>
+
+          <span class="smash-hammer">
+            🔨
+          </span>
+
+        </button>
+
+        <div class="smash-cost">
+          BREAK COST
+          <strong>25</strong>
         </div>
 
-      </div>
-
-      <p style="
-        color:#887866;
-        text-align:center;
-        font-size:12px;
-      ">
-        Выбери блок. Один из них может
-        скрывать большую награду.
-      </p>
-
-      <div class="smash-grid">
-
-        <button
-          class="smash-block"
-          data-smash="0">
-          ?
-        </button>
-
-        <button
-          class="smash-block"
-          data-smash="1">
-          ?
-        </button>
-
-        <button
-          class="smash-block"
-          data-smash="2">
-          ?
-        </button>
-
-        <button
-          class="smash-block"
-          data-smash="3">
-          ?
-        </button>
-
-        <button
-          class="smash-block"
-          data-smash="4">
-          ?
-        </button>
-
-        <button
-          class="smash-block"
-          data-smash="5">
-          ?
-        </button>
+        <p>
+          Нажми несколько раз,
+          чтобы разбить золотой блок.
+        </p>
 
       </div>
 
@@ -1725,132 +1703,197 @@ function renderSmash() {
   `;
 
 
-  let played = false;
+  const block =
+    $("#smashBlock");
+
+  let hits = 0;
+
+  const requiredHits =
+    random(3, 6);
 
 
-  document
-    .querySelectorAll(".smash-block")
-    .forEach(block => {
+  block?.addEventListener(
+    "click",
+    () => {
 
-      block.addEventListener(
-        "click",
-        () => {
-
-          if (played) return;
-
-          const cost = 25;
-
-          if (state.balance < cost) {
-
-            toast(
-              "Недостаточно токенов"
-            );
-
-            return;
-          }
-
-          played = true;
-
-          addBalance(-cost);
-          addXP(10);
-
-          sound("click");
-
-          block.classList.add("hit");
+      const cost = 25;
 
 
-          setTimeout(
-            () => {
+      if (hits === 0) {
 
-              const roll =
-                Math.random();
+        if (
+          state.balance < cost
+        ) {
 
-              let reward;
-
-              if (roll < .04) {
-                reward = 750;
-              } else if (roll < .12) {
-                reward = 300;
-              } else if (roll < .28) {
-                reward = 150;
-              } else if (roll < .55) {
-                reward = 50;
-              } else {
-                reward = 0;
-              }
-
-
-              if (reward) {
-
-                addBalance(reward);
-
-                state.totalWins += reward;
-
-                state.missionWins =
-                  Math.min(
-                    500,
-                    state.missionWins + reward
-                  );
-
-                addXP(
-                  reward >= 300
-                    ? 100
-                    : 30
-                );
-
-                showModal(
-                  reward >= 300
-                    ? "MEGA SMASH!"
-                    : "БЛОК РАЗБИТ!",
-                  `+${money(reward)}`,
-                  "Ты нашёл виртуальную награду.",
-                  reward >= 300
-                );
-
-              } else {
-
-                toast(
-                  "Пусто! Попробуй другой блок."
-                );
-
-                sound("lose");
-
-              }
-
-              save();
-              updateProgress();
-              registerGame();
-
-              setTimeout(
-                () => {
-
-                  block.classList.remove(
-                    "hit"
-                  );
-
-                  played = false;
-
-                },
-                500
-              );
-
-            },
-            500
+          toast(
+            "Недостаточно токенов"
           );
 
+          return;
         }
+
+        changeBalance(-cost);
+
+        registerSpin();
+      }
+
+
+      hits++;
+
+      playSound("click");
+
+      block.classList.add(
+        "hit"
       );
 
-    });
+      setTimeout(() => {
+        block.classList.remove(
+          "hit"
+        );
+      }, 120);
 
+
+      const progress =
+        Math.min(
+          100,
+          hits /
+          requiredHits *
+          100
+        );
+
+
+      block.style.setProperty(
+        "--smash-progress",
+        `${progress}%`
+      );
+
+
+      if (
+        hits >= requiredHits
+      ) {
+
+        block.classList.add(
+          "broken"
+        );
+
+        setTimeout(() => {
+
+          const roll =
+            Math.random();
+
+          let reward;
+
+          if (roll < .015) {
+
+            reward = 1500;
+
+          } else if (roll < .06) {
+
+            reward = 500;
+
+          } else if (roll < .18) {
+
+            reward = 250;
+
+          } else if (roll < .45) {
+
+            reward = 100;
+
+          } else if (roll < .75) {
+
+            reward = 50;
+
+          } else {
+
+            reward = 0;
+          }
+
+
+          if (reward > 0) {
+
+            changeBalance(reward);
+
+            registerWin(reward);
+
+            openModal(
+              reward >= 500
+                ? "SMASH JACKPOT!"
+                : "BLOCK BROKEN!",
+              `+${formatNumber(
+                reward
+              )}`,
+              "Ты разбил золотой блок и нашёл награду.",
+              reward >= 500
+            );
+
+          } else {
+
+            registerWin(0);
+
+            playSound("lose");
+
+            toast(
+              "Внутри ничего нет..."
+            );
+          }
+
+
+          setTimeout(() => {
+            renderSmash();
+          }, 1000);
+
+        }, 400);
+      }
+
+    }
+  );
 }
 
 
 /* =========================================================
-   INITIAL
+   TOURNAMENT
+   ========================================================= */
+
+$("#tournamentButton")
+  ?.addEventListener(
+    "click",
+    () => {
+
+      playSound("click");
+
+      openModal(
+        "TOURNAMENT",
+        `#${random(4, 48)}`,
+        `Твои результаты: ${state.wins} побед, лучший выигрыш ${formatNumber(state.bestWin)}.`,
+        false
+      );
+    }
+  );
+
+
+/* =========================================================
+   START
    ========================================================= */
 
 updateBalance();
-updateProgress();
-updateSound();
-openGame("slots");
+updateSoundButtons();
+
+
+/*
+   Открываем слоты только если игровая
+   область действительно существует.
+*/
+
+if (gameArea) {
+
+  openGame("slots");
+
+  document
+    .querySelector(
+      '.game-card[data-game="slots"]'
+    )
+    ?.classList.add(
+      "selected",
+      "active"
+    );
+}
